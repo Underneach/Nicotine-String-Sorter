@@ -34,8 +34,7 @@ func PrintLogoAnimation(appVersion string) {
 
 `)
 	time.Sleep(150 * time.Millisecond)
-	_, _ = ColorMagenta.Printf("                 v%s | %s\n\n\n", appVersion, runtime.Version())
-
+	_, _ = ColorMagenta.Printf("    v%s | %s\n\n\n", appVersion, runtime.Version())
 }
 
 func PrintLogoFast(appVersion string) {
@@ -58,8 +57,7 @@ func PrintLogoFast(appVersion string) {
                                       |___/  
 
 `)
-	_, _ = ColorMagenta.Printf("                 v%s | %s\n\n\n", appVersion, runtime.Version())
-
+	_, _ = ColorMagenta.Printf("    v%s | %s\n\n\n", appVersion, runtime.Version())
 }
 
 func PrintAutorLinks() {
@@ -77,8 +75,9 @@ func PrintUserMachineSpecs() {
 	fmt.Print(math.Round(float64(memory.FreeMemory()/1073741824)), "/", math.Round(float64(memory.TotalMemory()/1073741824)), " Гб доступной памяти\n\n")
 }
 
-func PrintInputData() string {
+func PrintInputData(appVersion string) string {
 	ClearTerm()
+	PrintLogoFast(appVersion)
 	PrintInfo()
 	fmt.Print("Всего файлов : ")
 	_, _ = ColorBlue.Print(len(filePathList))
@@ -105,7 +104,9 @@ func PrintInputData() string {
 		fmt.Print(" : ")
 		for _, req := range searchRequests {
 			_, _ = ColorBlue.Print(req)
-			fmt.Print(", ")
+			if reqLen > 1 {
+				fmt.Print(", ")
+			}
 		}
 		fmt.Print("\n")
 	case reqLen > 3 && reqLen <= 10:
@@ -138,38 +139,40 @@ func PrintInputData() string {
 			break
 		}
 	}
+	ClearTerm()
 	return returnData
 }
 
 func PrintResult(Duration time.Duration, checkedLines int64, invalidLines int64, resultLinesCount int64, totalFiles int, checkedFiles int) {
 
-	PrintInfo()
+	fmt.Print("\n\n")
+	PrintSuccess()
 	fmt.Print("Файлов отсортировано : ")
 	_, _ = ColorBlue.Print(checkedFiles)
 	fmt.Print(" из ")
 	_, _ = ColorBlue.Print(totalFiles, "\n")
 
-	PrintInfo()
+	PrintSuccess()
 	fmt.Print("Строк отсортировано : ")
 	_, _ = ColorBlue.Print(checkedLines, "\n")
 
-	PrintInfo()
+	PrintSuccess()
 	fmt.Print("Подходящих строк : ")
 	_, _ = ColorBlue.Print(resultLinesCount, "\n")
 
-	PrintInfo()
+	PrintSuccess()
 	fmt.Print("Невалидных строк : ")
 	_, _ = ColorBlue.Print(invalidLines, "\n")
 
-	fmt.Print("\n\n\n")
-	PrintInfo()
+	fmt.Print("\n")
+	PrintSuccess()
 	fmt.Print("Время выполнения : ")
 	_, _ = ColorBlue.Print(Duration, "\n\n\n")
 
 	PrintInfo()
 	fmt.Print("Нажмите ")
 	_, _ = ColorBlue.Print("Enter")
-	fmt.Print("для выхода")
+	fmt.Print(" для выхода")
 	_, _ = fmt.Scanln()
 	os.Exit(0)
 }

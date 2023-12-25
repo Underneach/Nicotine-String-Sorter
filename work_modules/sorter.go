@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"golang.org/x/text/transform"
+	"io"
 	"os"
 	"syscall"
 )
@@ -27,27 +28,31 @@ func Sorter(path string) {
 		return
 	}
 
-	scanner := bufio.NewScanner(transform.NewReader(file, fileDecoder))
+	reader := bufio.NewReader(transform.NewReader(file, fileDecoder))
 	bar := CreateBar()
 
-	for scanner.Scan() {
-		if len(readLines) < GetAviableStringsCount() {
-			readLines = append(readLines, scanner.Text())
-			println(line)
-		} else {
-			break
+	var rderr error
+
+Loop:
+	for {
+		line, rderr = reader.ReadString('\n')
+		switch rderr {
+		case nil:
+			continue Loop
+		case io.EOF:
+			break Loop
 		}
+		fmt.Println(line)
+		readLines = append(readLines, line)
 	}
 
-	linesLen := len(readLines)
-	fmt.Println(linesLen)
-
-	sorterWG.Add(linesLen)          //	 	
-	ProcessLines(readLines)         // ОТПРАВЛЯЕМ СТРОКИ В ПУЛ И ЖДЁМ
-	sorterWG.Wait()                 // 
-	checkedLines = +int64(linesLen) // Прибавляем строки и ждём
-	clear(readLines)                // Чистим строки
-	barerr := bar.Add(linesLen)     // Увеличиваем бар
+	linesLen := len(readLines)                    // Кол во строк в слайсе
+	sorterWG.Add(linesLen)                        //	 	
+	ProcessLines(readLines)                       // ОТПРАВЛЯЕМ СТРОКИ В ПУЛ И ЖДЁМ
+	sorterWG.Wait()                               // 
+	checkedLines = checkedLines + int64(linesLen) // Прибавляем строки
+	clear(readLines)                              // Чистим строки
+	barerr := bar.Add(linesLen)                   // Увеличиваем бар
 	if barerr != nil {
 		PrintErr()
 		fmt.Print("Ошибка Прогресс-Бара : ", barerr)
@@ -70,7 +75,6 @@ func Sorter(path string) {
 func ProcessLines(readLines []string) {
 	for _, line = range readLines {
 		err := workerPool.Submit(func() {
-			defer sorterWG.Done()
 			Worker(line)
 		})
 		if err != nil {
@@ -81,6 +85,8 @@ func ProcessLines(readLines []string) {
 }
 
 func Worker(line string) {
+	defer sorterWG.Done()
+	fmt.Println(line)
 	for _, request := range searchRequests {
 		if invalidPattern.MatchString(line) {
 			invalidLines++
@@ -105,19 +111,25 @@ func Worker(line string) {
 
 func WriteResult() {
 
+	fmt.Print("\n")
+	PrintInfo()
+	fmt.Print("Удаление дублей и запись в файл\n")
+
 	for _, request := range searchRequests {
 
 		writerWG.Add(1)
 		err := writerPool.Submit(func() {
-			defer writerWG.Done()
 			Writer(request)
 		})
 
 		if err != nil {
 			PrintErr()
 			fmt.Printf("%s : Ошибка записи найденных строк : %s\n", request, err)
+			PrintInfo()
+			fmt.Print("Запустите сортер с правами Админимтратора, если ошибка связана с доступом\n")
 			continue
 		}
+		writerWG.Wait()
 	}
 }
 
@@ -130,8 +142,9 @@ func WriteResult() {
 func Writer(request string) {
 	defer writerWG.Done()
 
-	PrintInfo()
-	fmt.Print("Удаление дублей и запись в файл\n")
+	if len(requestStructMap[request].resultStrings) == 0 {
+		return
+	}
 
 	resultFileName := appDir + "/" + badSymbolsPattern.ReplaceAllString(request, "_") + ".txt"
 
@@ -140,6 +153,8 @@ func Writer(request string) {
 	if err != nil {
 		PrintErr()
 		fmt.Printf("%s : Ошибка записи найденных строк : %s\n", request, err)
+		PrintInfo()
+		fmt.Print("Запустите сортер с правами Админимтратора, если ошибка связана с доступом\n")
 		return
 	}
 
@@ -169,6 +184,9 @@ func Writer(request string) {
 
 	_ = resultFile.Close()
 	PrintSuccess()
-	fmt.Printf("Записано %d уникальных строк", 1)
+	_, _ = ColorBlue.Print(request)
+	fmt.Print(" : Записано ")
+	_, _ = ColorBlue.Print(len(requestStructMap[request].resultStrings))
+	fmt.Print(" уникальных строк\n")
 
 }

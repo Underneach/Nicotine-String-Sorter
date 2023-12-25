@@ -78,7 +78,7 @@ func GetRequestsInput() []string {
 	_, _ = ColorBlue.Print("   1")
 	fmt.Print(" - Ввод из терминала\n")
 	_, _ = ColorBlue.Print("       2")
-	fmt.Print(" - Ввод из файла\n")
+	fmt.Print(" - Ввод из файла\n\n")
 	for true {
 
 		PrintInput()
@@ -93,7 +93,8 @@ func GetRequestsInput() []string {
 				fmt.Print("Введите запросы через пробел: ")
 				rawRequests, _ := userInputReader.ReadString('\n')
 				for _, request := range strings.Split(rawRequests, " ") {
-					_, err := regexp.Compile(".*" + strings.TrimSpace(strings.ToLower(request)) + ".*:(.+:.+)")
+					request = strings.TrimSpace(strings.ToLower(request))
+					_, err := regexp.Compile(".*" + request + ".*:(.+:.+)")
 					if err != nil {
 						PrintErr()
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)

@@ -22,11 +22,11 @@ func GetFilesSize(flist []string) {
 func ClearTerm() {
 	switch userOs {
 	case "windows":
-		cmd := exec.Command("clear") //Linux example, its tested
+		cmd := exec.Command("cmd", "/c", "cls") //Windows example, its tested 
 		cmd.Stdout = os.Stdout
 		_ = cmd.Run()
 	case "linux":
-		cmd := exec.Command("cmd", "/c", "cls") //Windows example, its tested 
+		cmd := exec.Command("clear") //Linux example, its tested
 		cmd.Stdout = os.Stdout
 		_ = cmd.Run()
 	default:

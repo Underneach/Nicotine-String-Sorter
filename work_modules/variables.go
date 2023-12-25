@@ -6,6 +6,7 @@ import (
 	"github.com/panjf2000/ants/v2"
 	"golang.org/x/text/encoding"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"sync"
@@ -20,16 +21,15 @@ var (
 	ColorMagenta = color.New(color.FgMagenta).Add(color.Bold)
 	ColorYellow  = color.New(color.FgYellow).Add(color.Bold)
 
-	appDir, _                     = os.Getwd()                      // Текущая папка
-	badSymbolsPattern, _          = regexp.Compile(`[^a-zA-Z0-9]+`) // Запрещенные для файла символы
+	badSymbolsPattern, _          = regexp.Compile(`[^a-zA-Z0-9]+`) // Разрешенные для файла символы
 	checkedLines         int64    = 0                               // Колво отработанных строк
 	invalidLines         int64    = 0                               // Колво невалидных строк, 64 байта что бы блять наверняка
 	checkedFiles                  = 0                               // Колво отработанных файлов
 	currentFileSize      int64    = 0                               // Размер текущего файла в сорте
 	currentFileLines     int64    = 0                               // Размер текущего файла в сорте
-	fileOffset           int64    = 0                               // Курсор чтения файла
 	line                 string                                     // Текущая строка для обработки
 	request              string                                     // Текущий запрос для обработки
+	appDir               string                                     //  Папка запуска
 	readLines            []string                                   // Текущие строки для обработки
 	resultFilesList      []string                                   // Список созданных файлов
 
@@ -40,6 +40,8 @@ var (
 	sorterWG          sync.WaitGroup                      // Синхронизатор очка пула сортера
 	writerPool        *ants.Pool                          // Пул записи
 	writerWG          sync.WaitGroup                      // Синхронизатор очка пула записи
+	dublesPool        *ants.Pool                          // Пул удаления дублей
+	dublesWG          sync.WaitGroup                      // Синхронизатор очка пула дублей
 	// Кеш получения доступного пула строк
 	cacheMutex     sync.Mutex // Мютекс кеша метода получения колва  доступных строк
 	cachedStrCount int        // Колво доступных строк | кешируется
@@ -78,4 +80,11 @@ func InitVar(_filePathList []string, _searchRequests []string, _saveType string)
 		_, _ = fmt.Scanln()
 		os.Exit(1)
 	}
+
+	appDirRaw, err := os.Executable()
+	if err != nil {
+		PrintErr()
+		fmt.Print("Не удалось определить папку запуска\n")
+	}
+	appDir = filepath.Dir(appDirRaw)
 }

@@ -72,9 +72,8 @@ func PrintFileInfo(path string) {
 func PrintFileSorted(path string) {
 	PrintSuccess()
 	PrintCheckedfiles()
-	fmt.Print("Файл ")
 	_, _ = ColorBlue.Print(path)
-	fmt.Print(" отсортирован\n\n")
+	fmt.Print(" : Файл отсортирован\n\n")
 }
 
 // PrintFileReadErr PrintZeroRequestsErr Ошибки

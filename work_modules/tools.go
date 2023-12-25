@@ -132,11 +132,5 @@ func CreateBar() *progressbar.ProgressBar {
 		progressbar.OptionSetItsString("Str"),
 		progressbar.OptionSetPredictTime(true),
 		progressbar.OptionSetRenderBlankState(true),
-		progressbar.OptionSetTheme(progressbar.Theme{
-			Saucer:        "[blue]=[reset]",
-			SaucerHead:    "[blue]>[reset]",
-			SaucerPadding: " ",
-			BarStart:      "[",
-			BarEnd:        "]",
-		}))
+	)
 }

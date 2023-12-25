@@ -13,13 +13,14 @@ func GetUserInputData(appVersion string) ([]string, []string, string) {
 		saveType = GetSaveTypeInput()
 
 		PrintLogoFast(appVersion)
-		if PrintInputData() == "continue" {
+		if PrintInputData(appVersion) == "continue" {
 			break
 		} else {
-			ClearTerm()
 			continue
 		}
 	}
+
+	PrintLogoFast(appVersion)
 
 	return filePathList, searchRequests, saveType
 

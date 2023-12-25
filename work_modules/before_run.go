@@ -9,7 +9,7 @@ func BeforeRun() {
 
 	PrintInfo()
 	fmt.Print("Запуск сортера...\n\n")
-	
+
 	for _, request = range searchRequests {
 
 		compiledRegEx, err := regexp.Compile("(.*" + request + ".*):(.+):(.+)")
@@ -24,7 +24,7 @@ func BeforeRun() {
 		currentStruct.requestPattern = compiledRegEx
 		requestStructMap[request] = currentStruct
 	}
-	
+
 	if len(requestStructMap) == 0 {
 		PrintZeroRequestsErr()
 	}
