@@ -3,7 +3,6 @@ package main
 import (
 	"String-Sorter/user_modules"
 	"String-Sorter/work_modules"
-	"runtime"
 	"time"
 )
 
@@ -16,10 +15,6 @@ var (
 )
 
 func main() {
-
-	runtime.GOMAXPROCS(min(runtime.NumCPU()-1, 1)) // В Go нет лимита используемых ядер | Вычитаем одно ядро что бы не было зависаний системы | Делаем костыль для мегамозгов с дедом на 1 ядро
-
-	go CheckUpdate(appVersion) // Проверяем обнову в отдельном потоке
 
 	filePathList, searchRequests, saveType := user_modules.GetUserInputData(appVersion)
 

@@ -46,7 +46,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 	if err != nil {
 		PrintErr()
 		fmt.Printf("Ошибка определения кодировки: %s : Используется : ", err)
-		_, _ = ColorBlue.Print(" utf-8/n")
+		ColorBlue.Print(" utf-8/n")
 		detectedEncoding, _ = charset.Lookup("utf-8")
 		return detectedEncoding.NewDecoder() // заменить на прямую ссылку с мапы
 	}
@@ -66,7 +66,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 		if len(lines) == 0 {
 			PrintWarn()
 			fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
-			_, _ = ColorBlue.Print("utf-8\n")
+			ColorBlue.Print("utf-8\n")
 			detectedEncoding, _ = charset.Lookup("utf-8")
 			decoder = detectedEncoding.NewDecoder()
 			break
@@ -76,7 +76,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 		if err != nil {
 			PrintErr()
 			fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
-			_, _ = ColorBlue.Print("utf-8\n")
+			ColorBlue.Print("utf-8\n")
 			detectedEncoding, _ = charset.Lookup("utf-8")
 			decoder = detectedEncoding.NewDecoder()
 			break
@@ -87,9 +87,10 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 			decoder = detectedEncoding.NewDecoder()
 			PrintSuccess()
 			fmt.Print("Определена кодировка : ")
-			_, _ = ColorBlue.Print(result.Charset)
+			ColorBlue.Print(result.Charset)
 			fmt.Printf(" : Вероятность : ")
-			_, _ = ColorBlue.Print(result.Confidence, "\n")
+			ColorBlue.Print(result.Confidence)
+			fmt.Print(" %\n")
 			break
 		}
 	}

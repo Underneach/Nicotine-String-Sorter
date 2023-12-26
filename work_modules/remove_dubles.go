@@ -4,12 +4,23 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func RemoveDublesResultFiles() {
 
-	if len(filePathList) == 1 {
+	if len(resultFilesList) == 0 {
+		fmt.Println("Ебаный рот где файлы")
+	}
+
+	if len(resultFilesList) == 1 {
+		fullPath, err := filepath.Abs(resultFilesList[0])
+		if err != nil {
+			return
+		}
+		PrintSuccess()
+		fmt.Print(fullPath)
 		return
 	}
 
@@ -60,9 +71,15 @@ func DublesRemove(path string) {
 	file.Close()
 
 	PrintSuccess()
-	_, _ = ColorBlue.Print(request)
-	fmt.Print(" : Всего записано уникальных строк : ")
-	_, _ = ColorBlue.Print(len(lines))
+	fullPath, err := filepath.Abs(path)
+	if err != nil {
+		ColorBlue.Print(request)
+		fmt.Print(" : ")
+	} else {
+		fmt.Print(fullPath, "\n")
+	}
+	fmt.Print("Всего записано уникальных строк : ")
+	ColorBlue.Print(len(lines))
 	fmt.Print(" : Всего удалено дубликатов : ")
-	_, _ = ColorBlue.Print(oldLen-len(lines), "\n")
+	ColorBlue.Print(oldLen-len(lines), "\n\n")
 }

@@ -4,9 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"golang.org/x/text/transform"
-	"io"
 	"os"
-	"syscall"
+	"strings"
 )
 
 func Sorter(path string) {
@@ -28,48 +27,35 @@ func Sorter(path string) {
 		return
 	}
 
-	reader := bufio.NewReader(transform.NewReader(file, fileDecoder))
 	bar := CreateBar()
 
-	var rderr error
-
-Loop:
-	for {
-		line, rderr = reader.ReadString('\n')
-		switch rderr {
-		case nil:
-			continue Loop
-		case io.EOF:
-			break Loop
-		}
-		fmt.Println(line)
-		readLines = append(readLines, line)
+	scanner := bufio.NewScanner(transform.NewReader(file, fileDecoder))
+	for scanner.Scan() {
+		readLines = append(readLines, strings.TrimSpace(scanner.Text()))
 	}
 
-	linesLen := len(readLines)                    // Кол во строк в слайсе
-	sorterWG.Add(linesLen)                        //	 	
-	ProcessLines(readLines)                       // ОТПРАВЛЯЕМ СТРОКИ В ПУЛ И ЖДЁМ
-	sorterWG.Wait()                               // 
-	checkedLines = checkedLines + int64(linesLen) // Прибавляем строки
-	clear(readLines)                              // Чистим строки
-	barerr := bar.Add(linesLen)                   // Увеличиваем бар
-	if barerr != nil {
+	linesLen := len(readLines) // Кол во строк в слайсе
+	if linesLen == 0 {
 		PrintErr()
-		fmt.Print("Ошибка Прогресс-Бара : ", barerr)
-		syscall.Exit(1)
+		fmt.Print(path, " : Не удалось прочитать строки в файле\n")
+		return
 	}
-
-	_ = bar.Finish()                         // Завершаем бар
-	_ = bar.Exit()                           // Закрываем бар
-	file.Close()                             // Закрываем файл
-	workerPool.Reboot()                      // Ребутим пул
-	WriteResult()                            // Пишем результат в файл
-	clear(readLines)                         // Чистим переменные
-	for _, request := range searchRequests { // Чистим переменные
-		clear(requestStructMap[request].resultStrings)
+	sorterWG.Add(linesLen)          //	 	
+	ProcessLines(readLines)         // ОТПРАВЛЯЕМ СТРОКИ В ПУЛ И ЖДЁМ
+	sorterWG.Wait()                 // 
+	checkedLines += int64(linesLen) // Прибавляем строки
+	clear(readLines)                // Чистим строки
+	_ = bar.Finish()                // Завершаем бар
+	_ = bar.Exit()                  // Закрываем бар
+	file.Close()                    // Закрываем файл
+	workerPool.Reboot()             // Ребутим пул
+	WriteResult()                   // Пишем результат в файл
+	clear(readLines)                // Чистим переменные
+	for _, request := range searchRequests {
+		clear(requestStructMap[request].resultStrings) // Чистим переменные
 	}
-	PrintFileSorted(path)
-	checkedFiles++ // Прибавляем пройденные файлы
+	PrintFileSorted(path) // Пишем файл отсортрован
+	checkedFiles++        // Прибавляем пройденные файлы
 }
 
 func ProcessLines(readLines []string) {
@@ -82,19 +68,24 @@ func ProcessLines(readLines []string) {
 			fmt.Print("Ошибка отправки строки в пул : ", err, "\n")
 		}
 	}
+
+	i := requestStructMap[request] // ПОХУЙ
+	for _, a := range tempResultLines {
+		i.resultStrings = append(i.resultStrings, a)
+	}
+	requestStructMap[request] = i
 }
 
 func Worker(line string) {
 	defer sorterWG.Done()
-	fmt.Println(line)
 	for _, request := range searchRequests {
 		if invalidPattern.MatchString(line) {
 			invalidLines++
 			return
 		} else {
-			result := requestStructMap[request].requestPattern.FindStringSubmatch(line)
-			if len(result) == 3 {
-				requestStructMap[request].resultStrings[line] = result
+			result = requestStructMap[request].requestPattern.FindString(line)
+			if result != "" {
+				tempResultLines = append(tempResultLines, result)
 				return
 			} else {
 				return
@@ -158,23 +149,7 @@ func Writer(request string) {
 		return
 	}
 
-	resultFilesList = append(resultFilesList, resultFileName)
-
-	writer := bufio.NewWriter(resultFile)
-
-	switch saveType {
-	case "1":
-		for _, linePart := range requestStructMap[request].resultStrings {
-			_, err = writer.WriteString(linePart[1] + ":" + linePart[2] + "\n")
-		}
-		_, err = writer.WriteString("\n")
-	case "2":
-		for _, linePart := range requestStructMap[request].resultStrings {
-			_, err = writer.WriteString(linePart[0] + ":" + linePart[1] + ":" + linePart[2] + "\n")
-		}
-		_, err = writer.WriteString("\n")
-	case "3":
-	}
+	_, err = bufio.NewWriter(resultFile).WriteString(strings.Join(requestStructMap[request].resultStrings, "\n"))
 
 	if err != nil {
 		PrintErr()
@@ -182,11 +157,13 @@ func Writer(request string) {
 		return
 	}
 
+	resultFilesList = append(resultFilesList, resultFileName)
+
 	_ = resultFile.Close()
 	PrintSuccess()
-	_, _ = ColorBlue.Print(request)
+	ColorBlue.Print(request)
 	fmt.Print(" : Записано ")
-	_, _ = ColorBlue.Print(len(requestStructMap[request].resultStrings))
+	ColorBlue.Print(len(requestStructMap[request].resultStrings))
 	fmt.Print(" уникальных строк\n")
 
 }

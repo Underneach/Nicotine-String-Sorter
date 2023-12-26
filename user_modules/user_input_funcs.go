@@ -29,7 +29,7 @@ func GetFilesInput() []string {
 			if fileInfo.IsDir() {
 				PrintSuccess()
 				fmt.Printf("Папка '")
-				_, _ = ColorBlue.Print(rawPath)
+				ColorBlue.Print(rawPath)
 				fmt.Print("' существует:\n")
 
 				_ = filepath.Walk(rawPath, func(path string, info os.FileInfo, fwerr error) error {
@@ -75,9 +75,10 @@ func GetRequestsInput() []string {
 	var result []string
 
 	PrintInfo()
-	_, _ = ColorBlue.Print("   1")
+	fmt.Print("Поддерживаемые типы ввода:\n\n")
+	ColorBlue.Print("       1")
 	fmt.Print(" - Ввод из терминала\n")
-	_, _ = ColorBlue.Print("       2")
+	ColorBlue.Print("       2")
 	fmt.Print(" - Ввод из файла\n\n")
 	for true {
 
@@ -138,7 +139,7 @@ func GetRequestsInput() []string {
 
 				for scanner.Scan() {
 					request := strings.TrimSpace(strings.ToLower(scanner.Text()))
-					_, err := regexp.Compile(".*" + request + ".*:(.+:.+)")
+					_, err := regexp.Compile(".*" + request + ".*/:.+/:.+")
 					if err != nil {
 						PrintErr()
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
@@ -149,7 +150,7 @@ func GetRequestsInput() []string {
 
 				PrintSuccess()
 				fmt.Print("Файл с запросами найден : ")
-				_, _ = ColorBlue.Print(len(result))
+				ColorBlue.Print(len(result))
 				fmt.Print(" запросов\n")
 
 				if len(result) == 0 {
@@ -174,16 +175,19 @@ func GetSaveTypeInput() string {
 
 	PrintInput()
 	fmt.Print("Поддерживаемые типы сохранения:\n\n")
-	fmt.Print("            1 - log:pass (по умолчанию)\n")
-	fmt.Print("            2 - url:log:pass\n")
-	fmt.Print("            3 - ...\n\n")
+	ColorBlue.Print("       1")
+	fmt.Print(" - log:pass (")
+	ColorBlue.Print("по умолчанию")
+	fmt.Print(")\n")
+	ColorBlue.Print("       2")
+	fmt.Print(" - url:log:pass\n\n")
 	for true {
 		PrintInput()
 		fmt.Print("Выберите тип сохранения: ")
 		rawSaveType, _ := userInputReader.ReadString('\n')
 		rawSaveType = strings.TrimSpace(rawSaveType)
 
-		if rawSaveType == "1" || rawSaveType == "2" || rawSaveType == "3" {
+		if rawSaveType == "1" || rawSaveType == "2" {
 			result = rawSaveType
 			fmt.Print("\n")
 			break

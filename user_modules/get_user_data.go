@@ -2,9 +2,10 @@ package user_modules
 
 func GetUserInputData(appVersion string) ([]string, []string, string) {
 
-	PrintLogoAnimation(appVersion)
-	PrintAutorLinks()
-	PrintUserMachineSpecs()
+	updateWG.Add(1)
+	go CheckUpdate(appVersion)
+	PrintLogoStart(appVersion)
+	updateWG.Wait()
 
 	for true {
 

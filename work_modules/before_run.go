@@ -10,9 +10,17 @@ func BeforeRun() {
 	PrintInfo()
 	fmt.Print("Запуск сортера...\n\n")
 
+	var compiledRegEx *regexp.Regexp
+	var err error
+
 	for _, request = range searchRequests {
 
-		compiledRegEx, err := regexp.Compile("(.*" + request + ".*):(.+):(.+)")
+		switch saveType {
+		case "1":
+			compiledRegEx, err = regexp.Compile(".*" + request + ".*/:(.+/:.+)")
+		case "2":
+			compiledRegEx, err = regexp.Compile("(.*" + request + ".*/:.+/:.+)")
+		}
 
 		if err != nil {
 			PrintErr()
