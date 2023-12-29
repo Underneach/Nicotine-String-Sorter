@@ -76,7 +76,7 @@ func PrintFileSorted(path string) {
 	fmt.Print(" : Файл отсортирован\n\n")
 }
 
-// PrintFileReadErr PrintZeroRequestsErr Ошибки
+// Ошибки
 
 func PrintFileReadErr(path string, err error) {
 	PrintErr()
@@ -92,4 +92,11 @@ func PrintZeroRequestsErr() {
 	fmt.Print(" для выхода")
 	fmt.Scanln()
 	os.Exit(1)
+}
+
+func PrintResultWriteErr(request string, err error) {
+	PrintErr()
+	fmt.Printf("%s : Ошибка записи найденных строк : %s\n", request, err)
+	PrintInfo()
+	fmt.Print("Запустите сортер с правами Администратора, если ошибка связана с доступом\n")
 }

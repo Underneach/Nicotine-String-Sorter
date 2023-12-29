@@ -6,18 +6,21 @@ func GetUserInputData(appVersion string) ([]string, []string, string) {
 	go CheckUpdate(appVersion)
 	PrintLogoStart(appVersion)
 	updateWG.Wait()
-
+	
+LoopInput:
 	for true {
 
 		filePathList = GetFilesInput()
 		searchRequests = GetRequestsInput()
 		saveType = GetSaveTypeInput()
 
-		PrintLogoFast(appVersion)
-		if PrintInputData(appVersion) == "continue" {
-			break
-		} else {
-			continue
+		switch PrintInputData(appVersion) {
+		case "continue":
+			break LoopInput
+		case "restart":
+			ClearTerm()			
+			PrintLogoFast(appVersion)
+			continue LoopInput
 		}
 	}
 

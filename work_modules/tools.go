@@ -8,8 +8,10 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/unicode"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -47,8 +49,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 		PrintErr()
 		fmt.Printf("Ошибка определения кодировки: %s : Используется : ", err)
 		ColorBlue.Print(" utf-8/n")
-		detectedEncoding, _ = charset.Lookup("utf-8")
-		return detectedEncoding.NewDecoder() // заменить на прямую ссылку с мапы
+		return unicode.UTF8.NewDecoder()
 	}
 
 	defer file.Close()
@@ -67,8 +68,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 			PrintWarn()
 			fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
 			ColorBlue.Print("utf-8\n")
-			detectedEncoding, _ = charset.Lookup("utf-8")
-			decoder = detectedEncoding.NewDecoder()
+			decoder = unicode.UTF8.NewDecoder()
 			break
 		}
 
@@ -77,8 +77,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 			PrintErr()
 			fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
 			ColorBlue.Print("utf-8\n")
-			detectedEncoding, _ = charset.Lookup("utf-8")
-			decoder = detectedEncoding.NewDecoder()
+			decoder = unicode.UTF8.NewDecoder()
 			break
 		}
 
@@ -126,12 +125,115 @@ func GetCurrentFileSize(path string) error {
 	return nil
 }
 
-func CreateBar() *progressbar.ProgressBar {
+func CreatePBar() *progressbar.ProgressBar {
 	return progressbar.NewOptions(
 		int(currentFileLines),
 		progressbar.OptionSetWidth(50),
 		progressbar.OptionSetItsString("Str"),
-		progressbar.OptionSetPredictTime(true),
 		progressbar.OptionSetRenderBlankState(true),
 	)
+}
+
+func RemoveDublesResultFiles() {
+
+	ExistFileCount := CheckFileExists()
+
+	if ExistFileCount == 0 {
+		PrintErr()
+		fmt.Print("Нет файлов для удаления дублей\n")
+		return
+	}
+
+	for _, request := range searchRequests {
+		dublesWG.Add(1)
+
+		if requestStructMap[request].resultFileExist {
+
+			err := dublesPool.Submit(func() {
+				DublesRemove(request, requestStructMap[request].resultFile)
+			})
+
+			if err != nil {
+				PrintErr()
+				fmt.Print("Ошибка удаления дублей из полученных файлов : ", err)
+			}
+		}
+	}
+
+	dublesWG.Wait()
+
+}
+
+func DublesRemove(request string, path string) {
+	defer dublesWG.Done()
+	var lines []string
+	rdfile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	scanner := bufio.NewScanner(rdfile)
+	scanner.Split(bufio.ScanLines)
+
+	if err != nil {
+		PrintErr()
+		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
+		return
+	}
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	rdfile.Close()
+
+	oldLen := len(lines)
+	lines = Unique(lines)
+
+	// Открываем файл и чистим
+	wrfile, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		PrintErr()
+		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
+		return
+	}
+
+	_ = wrfile.Truncate(0)
+	_, _ = wrfile.Seek(0, 0)
+
+	_, err = bufio.NewWriter(wrfile).WriteString(strings.Join(lines, "\n") + "\n")
+	if err != nil {
+		PrintErr()
+		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
+		return
+	}
+	wrfile.Close()
+
+	PrintSuccess()
+	_, _ = ColorBlue.Print(request)
+	fmt.Print(" : ")
+
+	fullPath, err := filepath.Abs(path)
+	if err == nil {
+		fmt.Print(fullPath, "\n")
+	}
+
+	fmt.Print("Всего записано уникальных строк : ")
+	ColorBlue.Print(len(lines))
+	fmt.Print(" : Всего удалено дубликатов : ")
+	ColorBlue.Print(oldLen-len(lines), "\n\n")
+}
+
+func CheckFileExists() int {
+
+	var ExistFileCount int
+
+	for _, request := range searchRequests {
+
+		path := requestStructMap[request].resultFile
+
+		_, fileerr := os.Stat(path)
+
+		if fileerr != nil {
+			requestStructMap[request].resultFileExist = true
+			ExistFileCount++
+		}
+	}
+	return ExistFileCount
 }

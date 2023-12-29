@@ -34,8 +34,7 @@ func PrintLogoStart(appVersion string) {
 
 `)
 	time.Sleep(150 * time.Millisecond)
-	ColorBlue.Print("   v")
-	ColorMagenta.Print(appVersion)
+	ColorMagenta.Print("    v", appVersion)
 	fmt.Print(" | ")
 	ColorMagenta.Print(runtime.Version())
 	ColorBlue.Print("     #")
@@ -69,8 +68,7 @@ func PrintLogoFast(appVersion string) {
                                       |___/ 
  
 `)
-	ColorBlue.Print("   v")
-	ColorMagenta.Print(appVersion)
+	ColorMagenta.Print("    v", appVersion)
 	fmt.Print(" | ")
 	ColorMagenta.Print(runtime.Version())
 	ColorBlue.Print("     #")
@@ -128,9 +126,9 @@ func PrintInputData(appVersion string) string {
 	fmt.Print("Выберите действие:\n\n")
 
 	ColorBlue.Print("	1")
-	fmt.Print(" : запустить сортер\n")
+	fmt.Print(" - Запустить сортер\n")
 	ColorBlue.Print("	2")
-	fmt.Print(" : ввести данные заново\n\n")
+	fmt.Print(" - Ввести данные заново\n\n")
 	for true {
 		fmt.Print("> ")
 		userSelect, _ := userInputReader.ReadString('\n')

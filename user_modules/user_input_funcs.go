@@ -139,7 +139,7 @@ func GetRequestsInput() []string {
 
 				for scanner.Scan() {
 					request := strings.TrimSpace(strings.ToLower(scanner.Text()))
-					_, err := regexp.Compile(".*" + request + ".*/:.+/:.+")
+					_, err := regexp.Compile(regexp.QuoteMeta(request) + ".*:.+:.+")
 					if err != nil {
 						PrintErr()
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
@@ -173,7 +173,7 @@ func GetSaveTypeInput() string {
 
 	var result string
 
-	PrintInput()
+	PrintInfo()
 	fmt.Print("Поддерживаемые типы сохранения:\n\n")
 	ColorBlue.Print("       1")
 	fmt.Print(" - log:pass (")

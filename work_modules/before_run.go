@@ -17,9 +17,9 @@ func BeforeRun() {
 
 		switch saveType {
 		case "1":
-			compiledRegEx, err = regexp.Compile(".*" + request + ".*/:(.+/:.+)")
+			compiledRegEx, err = regexp.Compile(regexp.QuoteMeta(request) + ".*:(.+:.+)")
 		case "2":
-			compiledRegEx, err = regexp.Compile("(.*" + request + ".*/:.+/:.+)")
+			compiledRegEx, err = regexp.Compile("(" + regexp.QuoteMeta(request) + ".*:.+:.+)")
 		}
 
 		if err != nil {
