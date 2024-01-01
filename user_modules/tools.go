@@ -46,3 +46,11 @@ func Unique(slice []string) []string {
 	}
 	return result
 }
+
+func SetTermTitle(appVersion string) {
+	cmd := exec.Command("title", "Nicotine String Sorter | НикотиновыйКодер | "+appVersion)
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}

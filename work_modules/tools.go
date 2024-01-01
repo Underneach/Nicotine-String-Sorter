@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/pbnjay/memory"
 	"github.com/saintfish/chardet"
-	"github.com/schollz/progressbar/v3"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
@@ -42,23 +41,24 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 
 	var detectedEncoding encoding.Encoding
 	var decoder *encoding.Decoder
+	var lines []string
 
 	detector := chardet.NewTextDetector()
 	file, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		PrintErr()
 		fmt.Printf("Ошибка определения кодировки: %s : Используется : ", err)
-		ColorBlue.Print(" utf-8/n")
+		ColorBlue.Print(" UTF-8/n")
 		return unicode.UTF8.NewDecoder()
 	}
 
 	defer file.Close()
+	defer clear(lines)
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
 	for {
-		var lines []string
 
 		for i := 0; i < 50 && scanner.Scan(); i++ {
 			lines = append(lines, scanner.Text())
@@ -76,7 +76,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 		if err != nil {
 			PrintErr()
 			fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
-			ColorBlue.Print("utf-8\n")
+			ColorBlue.Print("UTF-8\n")
 			decoder = unicode.UTF8.NewDecoder()
 			break
 		}
@@ -114,10 +114,11 @@ func GetCurrentFileSize(path string) error {
 	if err != nil {
 		return err
 	}
+
 	currentFileSize = info.Size()
-	cfl := int64(math.Round(float64(currentFileSize) / 80))
-	if cfl == 0 {
-		currentFileLines = 2
+
+	if cfl := int64(math.Round(float64(currentFileSize) / 80)); cfl == 0 {
+		currentFileLines = 10 // да да блять, это же ебучий костыль
 	} else {
 		currentFileLines = cfl
 	}
@@ -125,115 +126,15 @@ func GetCurrentFileSize(path string) error {
 	return nil
 }
 
-func CreatePBar() *progressbar.ProgressBar {
-	return progressbar.NewOptions(
-		int(currentFileLines),
-		progressbar.OptionSetWidth(50),
-		progressbar.OptionSetItsString("Str"),
-		progressbar.OptionSetRenderBlankState(true),
-	)
-}
+func GetRunDir() string {
 
-func RemoveDublesResultFiles() {
+	var path string
 
-	ExistFileCount := CheckFileExists()
-
-	if ExistFileCount == 0 {
-		PrintErr()
-		fmt.Print("Нет файлов для удаления дублей\n")
-		return
+	if dir, err := os.Executable(); err != nil {
+		path = "."
+	} else {
+		path = filepath.Dir(dir)
 	}
 
-	for _, request := range searchRequests {
-		dublesWG.Add(1)
-
-		if requestStructMap[request].resultFileExist {
-
-			err := dublesPool.Submit(func() {
-				DublesRemove(request, requestStructMap[request].resultFile)
-			})
-
-			if err != nil {
-				PrintErr()
-				fmt.Print("Ошибка удаления дублей из полученных файлов : ", err)
-			}
-		}
-	}
-
-	dublesWG.Wait()
-
-}
-
-func DublesRemove(request string, path string) {
-	defer dublesWG.Done()
-	var lines []string
-	rdfile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	scanner := bufio.NewScanner(rdfile)
-	scanner.Split(bufio.ScanLines)
-
-	if err != nil {
-		PrintErr()
-		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
-		return
-	}
-
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	rdfile.Close()
-
-	oldLen := len(lines)
-	lines = Unique(lines)
-
-	// Открываем файл и чистим
-	wrfile, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, os.ModePerm)
-	if err != nil {
-		PrintErr()
-		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
-		return
-	}
-
-	_ = wrfile.Truncate(0)
-	_, _ = wrfile.Seek(0, 0)
-
-	_, err = bufio.NewWriter(wrfile).WriteString(strings.Join(lines, "\n") + "\n")
-	if err != nil {
-		PrintErr()
-		fmt.Printf("%s : Ошибка удаления дубликатов : %s\n", path, err)
-		return
-	}
-	wrfile.Close()
-
-	PrintSuccess()
-	_, _ = ColorBlue.Print(request)
-	fmt.Print(" : ")
-
-	fullPath, err := filepath.Abs(path)
-	if err == nil {
-		fmt.Print(fullPath, "\n")
-	}
-
-	fmt.Print("Всего записано уникальных строк : ")
-	ColorBlue.Print(len(lines))
-	fmt.Print(" : Всего удалено дубликатов : ")
-	ColorBlue.Print(oldLen-len(lines), "\n\n")
-}
-
-func CheckFileExists() int {
-
-	var ExistFileCount int
-
-	for _, request := range searchRequests {
-
-		path := requestStructMap[request].resultFile
-
-		_, fileerr := os.Stat(path)
-
-		if fileerr != nil {
-			requestStructMap[request].resultFileExist = true
-			ExistFileCount++
-		}
-	}
-	return ExistFileCount
+	return path
 }

@@ -18,7 +18,7 @@ func GetFilesInput() []string {
 		fmt.Print("Введите путь к файлу или папке для сортировки: ")
 
 		rawPath, _ := userInputReader.ReadString('\n')
-		rawPath = strings.TrimSpace(rawPath)
+		rawPath = filepath.Clean(strings.TrimSpace(rawPath))
 
 		if rawPath == "" {
 			continue
@@ -30,7 +30,7 @@ func GetFilesInput() []string {
 				PrintSuccess()
 				fmt.Printf("Папка '")
 				ColorBlue.Print(rawPath)
-				fmt.Print("' существует:\n")
+				fmt.Print("' существует:\n\n")
 
 				_ = filepath.Walk(rawPath, func(path string, info os.FileInfo, fwerr error) error {
 

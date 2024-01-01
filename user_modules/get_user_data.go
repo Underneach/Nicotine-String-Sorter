@@ -1,12 +1,13 @@
 package user_modules
 
 func GetUserInputData(appVersion string) ([]string, []string, string) {
-
+	
+	SetTermTitle(appVersion)
 	updateWG.Add(1)
 	go CheckUpdate(appVersion)
 	PrintLogoStart(appVersion)
 	updateWG.Wait()
-	
+
 LoopInput:
 	for true {
 
@@ -18,7 +19,7 @@ LoopInput:
 		case "continue":
 			break LoopInput
 		case "restart":
-			ClearTerm()			
+			ClearTerm()
 			PrintLogoFast(appVersion)
 			continue LoopInput
 		}

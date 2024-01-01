@@ -1,6 +1,7 @@
 package user_modules
 
 import (
+	"String-Sorter/work_modules"
 	"fmt"
 	"github.com/klauspost/cpuid/v2"
 	"github.com/pbnjay/memory"
@@ -145,7 +146,7 @@ func PrintInputData(appVersion string) string {
 	return returnData
 }
 
-func PrintResult(Duration time.Duration, checkedLines int64, invalidLines int64, resultLinesCount int64, totalFiles int, checkedFiles int) {
+func PrintResult(Duration time.Duration, checkedLines int64, invalidLines int64, matchLines int64, totalFiles int, checkedFiles int) {
 
 	fmt.Print("\n\n")
 	PrintSuccess()
@@ -160,15 +161,15 @@ func PrintResult(Duration time.Duration, checkedLines int64, invalidLines int64,
 
 	PrintSuccess()
 	fmt.Print("Подходящих строк : ")
-	ColorBlue.Print(resultLinesCount, "\n")
+	ColorGreen.Print(matchLines, "\n")
 
-	PrintSuccess()
+	work_modules.PrintWarn()
 	fmt.Print("Невалидных строк : ")
-	ColorBlue.Print(invalidLines, "\n")
+	ColorYellow.Print(invalidLines, "\n")
 
 	fmt.Print("\n")
 	PrintSuccess()
-	fmt.Print("Время выполнения : ")
+	fmt.Print("Время сортировки : ")
 	ColorBlue.Print(Duration, "\n\n\n")
 
 	PrintInfo()

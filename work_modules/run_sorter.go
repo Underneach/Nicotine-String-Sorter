@@ -1,6 +1,6 @@
 package work_modules
 
-func RunSorter(_filePathList []string, _searchRequests []string, _saveType string) (int64, int64, int) {
+func RunSorter(_filePathList []string, _searchRequests []string, _saveType string) (int64, int64, int64, int) {
 	InitVar(_filePathList, _searchRequests, _saveType)
 	BeforeRun()
 
@@ -10,5 +10,5 @@ func RunSorter(_filePathList []string, _searchRequests []string, _saveType strin
 
 	RemoveDublesResultFiles()
 
-	return invalidLines, checkedLines, checkedFiles
+	return invalidLines, checkedLines, matchLines, checkedFiles
 }
