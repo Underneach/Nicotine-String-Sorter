@@ -17,7 +17,7 @@ var (
 
 func main() {
 
-	filePathList, searchRequests, saveType := []string{`C:\Users\truew\GolandProjects\String-Sorter\test\@urlcloudFREE — копия.txt` /*, `C:\Users\truew\GolandProjects\String-Sorter\test\@urlcloudFREE.txt`*/}, []string{"google", "yandex", "netflix"}, "1" //user_modules.GetUserInputData(appVersion)
+	filePathList, searchRequests, saveType := user_modules.GetUserInputData(appVersion)
 
 	startTime = time.Now() // Получаем время начала сортинга
 
