@@ -57,7 +57,7 @@ func Sorter(path string) {
 		TMPlinesLen = 0
 		clear(tmpLines)
 	}
-	//close(fileChannelMap[currPath])
+	close(fileChannelMap[currPath])
 
 	checkedLines += int64(currFileCheckedLines) // Прибавляем строки
 	_ = pBar.Finish()                           // Завершаем бар
