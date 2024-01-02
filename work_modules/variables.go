@@ -39,11 +39,11 @@ var (
 	invalidPattern, _       = regexp.Compile(`.{201,}|UNKNOWN`)                                   // Паттерн невалид строк
 	requestStructMap        = make(map[string]*Work)                                              // Карта со структурой для каждого запроса
 	fileDecoder             *encoding.Decoder                                                     // Декодер файла
-	workerPool              *ants.MultiPool                                                       // Пул сортера
+	workerPool              *ants.MultiPoolWithFunc                                               // Пул сортера
 	sorterWG                sync.WaitGroup                                                        // Синхронизатор очка пула сортера
-	writerPool              *ants.Pool                                                            // Пул записи
+	writerPool              *ants.PoolWithFunc                                                    // Пул записи
 	writerWG                sync.WaitGroup                                                        // Синхронизатор очка пула записи
-	dublesPool              *ants.Pool                                                            // Пул удаления дублей
+	dublesPool              *ants.PoolWithFunc                                                    // Пул удаления дублей
 	dublesWG                sync.WaitGroup                                                        // Синхронизатор очка пула дублей
 	cacheMutex              sync.Mutex                                                            // Мютекс кеша метода получения колва  доступных строк
 	cachedStrCount          int                                                                   // Колво доступных строк | кешируется
@@ -52,6 +52,7 @@ var (
 	runDir                  = GetRunDir()                                                         // Папка запуска
 	fileChannelMap          = make(map[string]chan [2]string)                                     // Мапа каналов
 	dublesMutex             sync.Mutex                                                            // Мютекс вывода результата дублей
+	RSMMutex                sync.RWMutex                                                          // 
 	filePathList            []string
 	searchRequests          []string
 	saveType                string
@@ -85,7 +86,13 @@ func InitVar(_filePathList []string, _searchRequests []string, _saveType string)
 	*/
 
 	var poolerr error
-	workerPool, poolerr = ants.NewMultiPool(runtime.NumCPU(), 100000, ants.RoundRobin, ants.WithPreAlloc(true))
+	workerPool, poolerr = ants.NewMultiPoolWithFunc(
+		runtime.NumCPU(),
+		100000,
+		func(line interface{}) { ProcessLine(line.(string)) },
+		ants.RoundRobin,
+		ants.WithPreAlloc(true),
+	)
 
 	if poolerr != nil {
 		PrintErr()
@@ -94,7 +101,12 @@ func InitVar(_filePathList []string, _searchRequests []string, _saveType string)
 		os.Exit(1)
 	}
 
-	writerPool, poolerr = ants.NewPool(len(searchRequests), ants.WithPreAlloc(true))
+	writerPool, poolerr = ants.NewPoolWithFunc(
+		len(searchRequests),
+		func(request interface{}) { Writer(request.(string)) },
+		ants.WithPreAlloc(true),
+	)
+
 	if poolerr != nil {
 		PrintErr()
 		ColorRed.Print("Невозможно запустить сортер : Ошибка пула записи : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
@@ -102,7 +114,11 @@ func InitVar(_filePathList []string, _searchRequests []string, _saveType string)
 		os.Exit(1)
 	}
 
-	dublesPool, poolerr = ants.NewPool(len(searchRequests), ants.WithPreAlloc(true))
+	dublesPool, poolerr = ants.NewPoolWithFunc(
+		len(searchRequests),
+		func(request interface{}) { DublesRemove(request.(string)) },
+		ants.WithPreAlloc(true))
+
 	if poolerr != nil {
 		PrintErr()
 		ColorRed.Print("Невозможно запустить сортер : Ошибка пула удаления дублей : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")

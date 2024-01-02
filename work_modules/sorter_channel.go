@@ -2,7 +2,6 @@ package work_modules
 
 import (
 	"bufio"
-	"fmt"
 	"golang.org/x/text/transform"
 	"os"
 	"time"
@@ -57,11 +56,11 @@ func Sorter(path string) {
 		TMPlinesLen = 0
 		clear(tmpLines)
 	}
-	close(fileChannelMap[currPath])
 
 	checkedLines += int64(currFileCheckedLines) // Прибавляем строки
 	_ = pBar.Finish()                           // Завершаем бар
 	_ = pBar.Exit()                             // Закрываем бар
+	close(fileChannelMap[currPath])
 
 	isFileInProcessing = false
 	for isResultWrited == false {
@@ -81,13 +80,7 @@ func Sorter(path string) {
 
 func SendLinesToPool(lines []string) {
 	for _, line := range lines {
-		if err := workerPool.Submit(func() {
-			ProcessLine(line)
-		}); err != nil {
-			PrintErr()
-			fmt.Printf("%s : Ошибка отправки строки в пул : %s \n", line, err)
-			continue
-		}
+		_ = workerPool.Invoke(line)
 	}
 	sorterWG.Wait()
 }
@@ -100,7 +93,6 @@ func SendLinesToPool(lines []string) {
 
 func ProcessLine(line string) {
 	defer sorterWG.Done()
-
 	if invalidPattern.MatchString(line) {
 		currentFileInvalidLines++
 		return

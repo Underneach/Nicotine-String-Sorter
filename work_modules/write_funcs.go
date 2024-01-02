@@ -23,22 +23,23 @@ func WriteResult() {
 
 	for _, req := range searchRequests {
 		writerWG.Add(1)
-		if wrterr := writerPool.Submit(func() {
-			Writer(req, requestStructMap[req].resultStrings, requestStructMap[req].resultFile) // Юзать мютексы? Да пошли они нахуй!
-		}); wrterr != nil {
-			PrintResultWriteErr(req, wrterr)
-			writerWG.Done()
-			continue
-		}
+		_ = writerPool.Invoke(req)
 	}
 
 	writerWG.Wait()
 	PrintSortInfo()
 }
 
-func Writer(request string, lines []string, path string) {
+func Writer(request string) {
+
 	defer writerWG.Done()
-	fmt.Println(path)
+
+	RSMMutex.RLock()
+
+	lines := requestStructMap[request].resultStrings
+	path := requestStructMap[request].resultFile
+
+	RSMMutex.RUnlock()
 
 	if len(lines) == 0 {
 		PrintErr()
@@ -70,19 +71,23 @@ func Writer(request string, lines []string, path string) {
 */
 
 func RemoveDublesResultFiles() {
-
+	fmt.Print("\n")
 	dublesWG.Add(reqLen)
+
 	for _, request := range searchRequests {
-		_ = dublesPool.Submit(func() {
-			DublesRemove(request, requestStructMap[request].resultFile)
-			dublesWG.Done()
-		})
+		_ = dublesPool.Invoke(request)
 	}
+
 	dublesWG.Wait()
 }
 
-func DublesRemove(request string, path string) {
-	fmt.Println(request)
+func DublesRemove(request string) {
+
+	defer dublesWG.Done()
+
+	RSMMutex.RLock()
+	path := requestStructMap[request].resultFile
+	RSMMutex.RUnlock()
 
 	var lines []string
 	rdfile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
