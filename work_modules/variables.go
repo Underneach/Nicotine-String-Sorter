@@ -52,7 +52,7 @@ var (
 	runDir                  = GetRunDir()                                                         // Папка запуска
 	fileChannelMap          = make(map[string]chan [2]string)                                     // Мапа каналов
 	dublesMutex             sync.Mutex                                                            // Мютекс вывода результата дублей
-	RSMMutex                sync.RWMutex                                                          // 
+	RSMMutex                sync.RWMutex                                                          // Мютекс карты со структурой для каждого запроса
 	filePathList            []string
 	searchRequests          []string
 	saveType                string

@@ -115,7 +115,7 @@ func GetRequestsInput() []string {
 		case "2":
 			for true {
 				PrintInput()
-				fmt.Print("Введите путь к файлу без пробелов: ")
+				fmt.Print("Введите путь к файлу: ")
 				rawRequests, _ := userInputReader.ReadString('\n')
 				rawRequests = strings.TrimSpace(rawRequests)
 				_, sterr := os.Stat(rawRequests)
