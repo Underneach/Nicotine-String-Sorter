@@ -14,6 +14,7 @@ func Sorter(path string) {
 	var tmpLines []string
 	TMPlinesLen = 0
 	currFileCheckedLines = 0
+	currFileInvalidLines = 0
 
 	if err := GetCurrentFileSize(path); err != nil {
 		PrintFileReadErr(path, err)
@@ -43,7 +44,7 @@ func Sorter(path string) {
 			SendLinesToPool(tmpLines)
 			currFileCheckedLines += TMPlinesLen
 			TMPlinesLen = 0
-			clear(tmpLines)
+			tmpLines = nil
 		} else {
 			tmpLines = append(tmpLines, scanner.Text())
 		}
@@ -54,7 +55,7 @@ func Sorter(path string) {
 		SendLinesToPool(tmpLines)
 		currFileCheckedLines += TMPlinesLen
 		TMPlinesLen = 0
-		clear(tmpLines)
+		tmpLines = nil
 	}
 
 	checkedLines += int64(currFileCheckedLines) // Прибавляем строки
@@ -63,19 +64,20 @@ func Sorter(path string) {
 	close(fileChannelMap[currPath])
 
 	isFileInProcessing = false
-	for isResultWrited == false {
+	for !isResultWrited {
 		time.Sleep(time.Millisecond * 100)
 	}
 
 	file.Close() // Закрываем файл
 
 	for _, request := range searchRequests {
-		clear(requestStructMap[request].resultStrings) // Чистим список
+		requestStructMap[request].resultStrings = nil // Чистим список
 	}
 
-	PrintFileSorted(path)                   // Пишем файл отсортрован
-	checkedFiles++                          // Прибавляем пройденные файлы
-	invalidLines += currentFileInvalidLines // Суммируем невалид строки
+	PrintFileSorted(path)                // Пишем файл отсортрован
+	checkedFiles++                       // Прибавляем пройденные файлы
+	invalidLines += currFileInvalidLines // Суммируем невалид строки
+	matchLines += currFileMatchLines     // Суммируем найденые строки
 }
 
 func SendLinesToPool(lines []string) {
@@ -94,7 +96,7 @@ func SendLinesToPool(lines []string) {
 func ProcessLine(line string) {
 	defer sorterWG.Done()
 	if invalidPattern.MatchString(line) {
-		currentFileInvalidLines++
+		currFileInvalidLines++
 		return
 	}
 
@@ -112,7 +114,6 @@ func ProcessResult() {
 		Обработка результата отдельная ебатория, в питоне все результаты работы из ThreadPoolExecuror сохранялись структом в список,
 		и эта хуйня жрала кучу памяти. Делать пул в данном случае смысла нет, карта не умеет в потокобезопасность и будет сосать бибу.
 		Делать sync.Map - нахуй пойдет скорость. Сейчас реализована дефолт FIFO очередь, самый оптимальный подход по моему мнению.
-
 
 	*/
 
@@ -132,11 +133,11 @@ func ProcessResult() {
 	}
 
 	for _, request := range searchRequests {
-		matchLines += int64(len(ResultListMap[request]))
+		currFileMatchLines = int64(len(ResultListMap[request]))
 		requestStructMap[request].resultStrings = ResultListMap[request]
 	}
 
-	clear(ResultListMap)  // чистим список
+	ResultListMap = nil   // чистим
 	WriteResult()         // Пишем результат в файл
 	isResultWrited = true // сообщаем о том, что файл записан
 }

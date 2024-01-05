@@ -61,7 +61,7 @@ func Writer(request string) {
 	}
 
 	_ = resultFile.Close()
-	clear(lines)
+	lines = nil
 }
 
 /*
@@ -145,5 +145,5 @@ func DublesRemove(request string) {
 	fmt.Print(" : Дубликатов : ")
 	ColorBlue.Print(oldLen-len(lines), "\n\n")
 	dublesMutex.Unlock()
-	clear(lines)
+	lines = nil
 }

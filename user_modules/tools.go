@@ -8,14 +8,14 @@ import (
 
 func GetFilesSize(flist []string) {
 	for _, path := range flist {
-		info, err := os.Stat(path)
-		if err != nil {
+
+		if info, err := os.Stat(path); err != nil {
 			PrintErr()
 			fmt.Printf("%s : Ошибка получения размера файла : %s\n", path, err)
 			continue
+		} else {
+			filesSize = +info.Size()
 		}
-
-		filesSize = +info.Size()
 	}
 }
 
@@ -48,9 +48,17 @@ func Unique(slice []string) []string {
 }
 
 func SetTermTitle(appVersion string) {
-	cmd := exec.Command("title", "Nicotine String Sorter | НикотиновыйКодер | "+appVersion)
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err.Error())
+	var cmd *exec.Cmd
+
+	switch userOs {
+	case "windows":
+		cmd = exec.Command("powershell", "-Command", "& { $Host.UI.RawUI.WindowTitle = '"+"Nicotine String Sorter | НикотиновыйКодер | "+appVersion+"' }")
+	case "linux":
+		cmd = exec.Command("bash", "-c", "echo -ne '\\033]0;"+"Nicotine String Sorter | НикотиновыйКодер | "+appVersion+"\\007'")
+	}
+
+	if err := cmd.Run(); err != nil {
+		PrintErr()
+		fmt.Print(err, "\n")
 	}
 }

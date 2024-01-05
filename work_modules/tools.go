@@ -65,31 +65,19 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 		}
 
 		if len(lines) == 0 {
-			PrintWarn()
-			fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
-			ColorBlue.Print("utf-8\n")
+			PrintEndodingLinesEnd()
 			decoder = unicode.UTF8.NewDecoder()
 			break
 		}
 
-		result, err := detector.DetectBest([]byte(strings.Join(lines, "")))
-		if err != nil {
-			PrintErr()
-			fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
-			ColorBlue.Print("UTF-8\n")
+		if result, err := detector.DetectBest([]byte(strings.Join(lines, ""))); err != nil {
+			PrintEncodingErr(err)
 			decoder = unicode.UTF8.NewDecoder()
 			break
-		}
-
-		if result.Confidence >= 90 {
+		} else if result.Confidence >= 90 {
 			detectedEncoding, _ = charset.Lookup(result.Charset)
 			decoder = detectedEncoding.NewDecoder()
-			PrintSuccess()
-			fmt.Print("Определена кодировка : ")
-			ColorBlue.Print(result.Charset)
-			fmt.Printf(" : Вероятность : ")
-			ColorBlue.Print(result.Confidence)
-			fmt.Print(" %\n")
+			PrintEncoding(result)
 			break
 		}
 	}

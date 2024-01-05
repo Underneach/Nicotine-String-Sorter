@@ -22,40 +22,41 @@ var (
 	ColorYellow      = color.New(color.FgYellow).Add(color.Bold)
 	ColorYellowLight = color.New(color.FgYellow)
 
-	isFileInProcessing      bool                                                                  // Обрабатывается ли файл
-	isResultWrited          bool                                                                  // Записан ли файл
-	badSymbolsPattern, _                                        = regexp.Compile(`[^a-zA-Z0-9]+`) // Разрешенные для файла символы
-	checkedLines            int64                               = 0                               // Колво отработанных строк
-	invalidLines            int64                               = 0                               // Колво невалидных строк, 64 байта что бы блять наверняка
-	matchLines              int64                               = 0                               // Кол во подошедших строк
-	checkedFiles                                                = 0                               // Колво отработанных файлов
-	currentFileSize         int64                               = 0                               // Размер текущего файла в сорте
-	currentFileLines        int64                               = 0                               // Размер текущего файла в сорте
-	currentFileInvalidLines int64                               = 0                               // Кол во невалидных строк текущего файла
-	TMPlinesLen                                                 = 0                               // Чанк строк в файле
-	currFileCheckedLines                                        = 0                               // Прочеканные строки в текущем файле
-	reqLen                                                      = 0                               // Кол во запросов
-	currPath                string                                                                // Текущий файл
-	invalidPattern, _       = regexp.Compile(`.{201,}|UNKNOWN`)                                   // Паттерн невалид строк
-	requestStructMap        = make(map[string]*Work)                                              // Карта со структурой для каждого запроса
-	fileDecoder             *encoding.Decoder                                                     // Декодер файла
-	workerPool              *ants.MultiPoolWithFunc                                               // Пул сортера
-	sorterWG                sync.WaitGroup                                                        // Синхронизатор очка пула сортера
-	writerPool              *ants.PoolWithFunc                                                    // Пул записи
-	writerWG                sync.WaitGroup                                                        // Синхронизатор очка пула записи
-	dublesPool              *ants.PoolWithFunc                                                    // Пул удаления дублей
-	dublesWG                sync.WaitGroup                                                        // Синхронизатор очка пула дублей
-	cacheMutex              sync.Mutex                                                            // Мютекс кеша метода получения колва  доступных строк
-	cachedStrCount          int                                                                   // Колво доступных строк | кешируется
-	lastUpdate              time.Time                                                             // Время с последней обновы cachedStrCount
-	pBar                    *progressbar.ProgressBar                                              // Прогресс бар
-	runDir                  = GetRunDir()                                                         // Папка запуска
-	fileChannelMap          = make(map[string]chan [2]string)                                     // Мапа каналов
-	dublesMutex             sync.Mutex                                                            // Мютекс вывода результата дублей
-	RSMMutex                sync.RWMutex                                                          // Мютекс карты со структурой для каждого запроса
-	filePathList            []string
-	searchRequests          []string
-	saveType                string
+	isFileInProcessing   bool                                                                  // Обрабатывается ли файл
+	isResultWrited       bool                                                                  // Записан ли файл
+	badSymbolsPattern, _                                     = regexp.Compile(`[^a-zA-Z0-9]+`) // Разрешенные для файла символы
+	checkedLines         int64                               = 0                               // Колво отработанных строк
+	invalidLines         int64                               = 0                               // Колво невалидных строк, 64 байта что бы блять наверняка
+	currFileMatchLines   int64                               = 0                               //
+	matchLines           int64                               = 0                               // Кол во подошедших строк
+	checkedFiles                                             = 0                               // Колво отработанных файлов
+	currentFileSize      int64                               = 0                               // Размер текущего файла в сорте
+	currentFileLines     int64                               = 0                               // Размер текущего файла в сорте
+	currFileInvalidLines int64                               = 0                               // Кол во невалидных строк текущего файла
+	currFileCheckedLines                                     = 0                               // Прочеканные строки в текущем файле
+	TMPlinesLen                                              = 0                               // Чанк строк в файле
+	reqLen                                                   = 0                               // Кол во запросов
+	currPath             string                                                                // Текущий файл
+	invalidPattern, _    = regexp.Compile(`.{201,}|UNKNOWN`)                                   // Паттерн невалид строк
+	requestStructMap     = make(map[string]*Work)                                              // Карта со структурой для каждого запроса
+	fileDecoder          *encoding.Decoder                                                     // Декодер файла
+	workerPool           *ants.MultiPoolWithFunc                                               // Пул сортера
+	sorterWG             sync.WaitGroup                                                        // Синхронизатор очка пула сортера
+	writerPool           *ants.PoolWithFunc                                                    // Пул записи
+	writerWG             sync.WaitGroup                                                        // Синхронизатор очка пула записи
+	dublesPool           *ants.PoolWithFunc                                                    // Пул удаления дублей
+	dublesWG             sync.WaitGroup                                                        // Синхронизатор очка пула дублей
+	cacheMutex           sync.Mutex                                                            // Мютекс кеша метода получения колва  доступных строк
+	cachedStrCount       int                                                                   // Колво доступных строк | кешируется
+	lastUpdate           time.Time                                                             // Время с последней обновы cachedStrCount
+	pBar                 *progressbar.ProgressBar                                              // Прогресс бар
+	runDir               = GetRunDir()                                                         // Папка запуска
+	fileChannelMap       = make(map[string]chan [2]string)                                     // Мапа каналов
+	dublesMutex          sync.Mutex                                                            // Мютекс вывода результата дублей
+	RSMMutex             sync.RWMutex                                                          // Мютекс карты со структурой для каждого запроса
+	filePathList         []string
+	searchRequests       []string
+	saveType             string
 )
 
 type Work struct {

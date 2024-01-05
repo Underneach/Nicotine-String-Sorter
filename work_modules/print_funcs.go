@@ -2,6 +2,7 @@ package work_modules
 
 import (
 	"fmt"
+	"github.com/saintfish/chardet"
 	"github.com/schollz/progressbar/v3"
 	"os"
 	"time"
@@ -94,14 +95,23 @@ func PrintSortInfo() {
 	case reqLen > 10:
 		PrintSuccess()
 		fmt.Print("Найдено ")
-		ColorBlue.Print(matchLines)
+		ColorBlue.Print(currFileMatchLines)
 		fmt.Print(" подходящих строк\n")
 	}
 	PrintWarn()
 	ColorYellowLight.Print("Невалид")
 	fmt.Print(" : ")
-	ColorYellowLight.Print(currentFileInvalidLines)
+	ColorYellowLight.Print(currFileInvalidLines)
 	fmt.Print(" строк\n")
+}
+
+func PrintEncoding(result *chardet.Result) {
+	PrintSuccess()
+	fmt.Print("Определена кодировка : ")
+	ColorBlue.Print(result.Charset)
+	fmt.Printf(" : Вероятность : ")
+	ColorBlue.Print(result.Confidence)
+	fmt.Print(" %\n")
 }
 
 func CreatePBar() *progressbar.ProgressBar {
@@ -157,4 +167,16 @@ func PrintRemoveDublesErr(request string, err error) {
 	ColorBlue.Print(request)
 	fmt.Print(" : Ошибка удаления дублей : ")
 	ColorRed.Print(err, "\n")
+}
+
+func PrintEncodingErr(err error) {
+	PrintErr()
+	fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
+	ColorBlue.Print("UTF-8\n")
+}
+
+func PrintEndodingLinesEnd() {
+	PrintWarn()
+	fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
+	ColorBlue.Print("utf-8\n")
 }

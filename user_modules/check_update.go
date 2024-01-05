@@ -8,20 +8,22 @@ import (
 )
 
 func CheckUpdate(appVersion string) {
-
 	defer updateWG.Done()
-
-	time.Sleep(time.Second)
 
 	type GitResponse struct {
 		TagName    string `json:"tag_name"`
 		ReleaseUrl string `json:"html_url"`
 	}
-	var apiResponse GitResponse
+
+	var (
+		apiResponse GitResponse
+		err         error
+		resp        *http.Response
+	)
 
 	httpClient := &http.Client{Timeout: 5 * time.Second}
 
-	resp, err := httpClient.Get("https://api.github.com/repos/Underneach/Nicotine-String-Sorter/releases/latest")
+	resp, err = httpClient.Get("https://api.github.com/repos/Underneach/Nicotine-String-Sorter/releases/latest")
 	if err != nil || resp.StatusCode != 200 {
 		WaitLogo()
 		PrintErr()
@@ -53,7 +55,7 @@ func CheckUpdate(appVersion string) {
 }
 
 func WaitLogo() {
-	for isLogoPrinted == false {
+	for !isLogoPrinted {
 		time.Sleep(time.Millisecond * 100)
 	}
 }
