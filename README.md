@@ -2,7 +2,7 @@
 Сортер ваших Url:Log:Pass строк на Go
 
 
-![image](https://github.com/Underneach/Nicotine-String-Sorter/assets/137613889/df627566-40cf-43ec-b0d0-664c48749c7b)
+[![image](https://raw.githubusercontent.com/Underneach/Nicotine-String-Sorter/String-Sorter-regexp/image.png)
 
 
 ## Что сортер умеет
