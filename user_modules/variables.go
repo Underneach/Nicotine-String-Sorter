@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/fatih/color"
 	"os"
+	"regexp"
 	"runtime"
 	"sync"
 )
@@ -17,13 +18,16 @@ var (
 	ColorMagenta = color.New(color.FgMagenta).Add(color.Bold)
 	ColorYellow  = color.New(color.FgYellow).Add(color.Bold)
 
-	filePathList    []string                    // Форматированне пути
-	searchRequests  []string                    // Форматированные запросы
-	saveType        string                      // Форматированная строка с типом сейва
 	filesSize       int64                       // Размер всех входных файлов
 	returnData      string                      // Выбор пользователя после ввода данных
 	userInputReader = bufio.NewReader(os.Stdin) // Альтернативный ридер инпута с поддержкой пробелов
 	userOs          = runtime.GOOS              // ОС юзера
 	updateWG        sync.WaitGroup              // ВГ обновы
-	isLogoPrinted   = false                     // Напечатаго ли лого
+	isLogoPrinted   = false                     // Напечатано ли лого
+	partRegex, _    = regexp.Compile(`[^0-9]+`)
+	workMode        string
+	filePathList    []string
+	searchRequests  []string
+	saveType        string
+	numParts        int
 )

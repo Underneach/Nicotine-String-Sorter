@@ -37,9 +37,9 @@ func PrintInfo() {
 // PrintLinesChunk PrintCheckedFiles PrintFileInfo PrintFileSorted Инфа о работе сортера
 
 func PrintLinesChunk() {
-	PrintSuccess()
+	PrintInfo()
 	fmt.Print("Чтение файла по ")
-	if GetAviableStringsCount() > int(currentFileLines) {
+	if GetAviableStringsCount() > currentFileLines {
 		ColorBlue.Print(currentFileLines)
 	} else {
 		ColorBlue.Print(GetAviableStringsCount())
@@ -58,7 +58,7 @@ func PrintCheckedFiles() {
 func PrintFileInfo(path string) {
 	PrintInfo()
 	PrintCheckedFiles()
-	fmt.Print("Сортировка файла ")
+	fmt.Print("Обработка файла ")
 	ColorBlue.Print(path)
 	fmt.Print(" : ")
 	if currentFileSize < 1610612736 {
@@ -76,7 +76,7 @@ func PrintFileSorted(path string) {
 	PrintInfo()
 	PrintCheckedFiles()
 	ColorBlue.Print(path)
-	fmt.Print(" : Файл отсортирован\n\n")
+	fmt.Print(" : Файл обработан\n\n")
 }
 
 func PrintSortInfo() {
@@ -96,13 +96,20 @@ func PrintSortInfo() {
 		PrintSuccess()
 		fmt.Print("Найдено ")
 		ColorBlue.Print(currFileMatchLines)
-		fmt.Print(" подходящих строк\n")
+		fmt.Print(" подходящих строк по всем запросам\n")
 	}
-	PrintWarn()
-	ColorYellowLight.Print("Невалид")
-	fmt.Print(" : ")
-	ColorYellowLight.Print(currFileInvalidLines)
-	fmt.Print(" строк\n")
+}
+
+func PrintClearInfo() {
+	PrintInfo()
+	ColorBlue.Print(TMPlinesLen)
+	fmt.Print(" строк : ")
+	ColorBlue.Print(currFileWritedString)
+	fmt.Print(" Уникальных : ")
+	ColorBlue.Print(currFileDubles)
+	fmt.Print(" Повторов : ")
+	ColorBlue.Print(currFileInvalidLen)
+	fmt.Print(" Невалидных\n")
 }
 
 func PrintEncoding(result *chardet.Result) {
@@ -126,10 +133,10 @@ func CreatePBar() *progressbar.ProgressBar {
 func PBarUpdater() {
 	pBar = CreatePBar()
 	for isFileInProcessing {
-		if currFileCheckedLines > int(currentFileLines) {
+		if TMPlinesLen > int(currentFileLines) {
 			_ = pBar.Set64(currentFileLines)
 		} else {
-			_ = pBar.Set(currFileCheckedLines)
+			_ = pBar.Set(TMPlinesLen)
 		}
 		time.Sleep(time.Millisecond * 250)
 	}
@@ -179,4 +186,44 @@ func PrintEndodingLinesEnd() {
 	PrintWarn()
 	fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
 	ColorBlue.Print("utf-8\n")
+}
+
+func PrintSorterResult() {
+
+	fmt.Print("\n\n")
+	PrintSuccess()
+	fmt.Print("Файлов отсортировано : ")
+	ColorBlue.Print(checkedFiles)
+	fmt.Print(" из ")
+	ColorBlue.Print(len(filePathList), "\n")
+
+	PrintSuccess()
+	fmt.Print("Строк отсортировано : ")
+	ColorBlue.Print(checkedLines, "\n")
+
+	PrintSuccess()
+	fmt.Print("Подходящих строк : ")
+	ColorGreen.Print(matchLines, "\n")
+}
+
+func PrintCleanerResult() {
+	fmt.Print("\n\n")
+	PrintSuccess()
+	fmt.Print("Файлов очищено : ")
+	ColorBlue.Print(checkedFiles)
+	fmt.Print(" из ")
+	ColorBlue.Print(len(filePathList), "\n")
+	PrintSuccess()
+	fmt.Print("Повторов удалено : ")
+	ColorBlue.Print(cleanerDublesLen, "\n")
+	PrintSuccess()
+	fmt.Print("Невалида удалено : ")
+	ColorBlue.Print(cleanerInvalidLen, "\n")
+	PrintSuccess()
+	fmt.Print("Записано уникальных строк : ")
+	ColorBlue.Print(cleanerWritedString, "\n\n")
+	for _, path := range filePathList {
+		PrintSuccess()
+		fmt.Print(cleanerOutputFilesMap[path] + "\n")
+	}
 }

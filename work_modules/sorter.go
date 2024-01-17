@@ -2,19 +2,61 @@ package work_modules
 
 import (
 	"bufio"
+	"fmt"
 	"golang.org/x/text/transform"
+	"math"
 	"os"
+	"regexp"
 	"time"
 )
 
+func RunSorter() {
+
+	PrintInfo()
+	fmt.Print("Запуск сортера...")
+
+	var (
+		compiledRegEx *regexp.Regexp
+		err           error
+	)
+
+	for _, request := range searchRequests {
+
+		switch saveType {
+		case "1":
+			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*:(.+:.+)")
+		case "2":
+			compiledRegEx, err = regexp.Compile("(" + ".*" + regexp.QuoteMeta(request) + ".*:.+:.+)")
+		}
+
+		if err != nil {
+			PrintErr()
+			fmt.Printf("%s : Ошибка компиляции запроса : %s\n", request, err)
+			continue
+		}
+
+		currentStruct := new(Work)
+		currentStruct.requestPattern = compiledRegEx
+		currentStruct.resultFile = runDir + `\` + fileBadSymbolsPattern.ReplaceAllString(request, "_") + ".txt"
+		requestStructMap[request] = currentStruct
+	}
+
+	if len(requestStructMap) == 0 {
+		PrintZeroRequestsErr()
+	}
+
+	fmt.Print("\r")
+	PrintSuccess()
+	fmt.Print("Сортер запущен   \n\n")
+}
+
 func Sorter(path string) {
+
 	currPath = path
+	sorterStringChannelMap[currPath] = make(chan string)
 	isFileInProcessing = false
 	isResultWrited = false
-	var tmpLines []string
 	TMPlinesLen = 0
-	currFileCheckedLines = 0
-	currFileInvalidLines = 0
 
 	if err := GetCurrentFileSize(path); err != nil {
 		PrintFileReadErr(path, err)
@@ -32,36 +74,31 @@ func Sorter(path string) {
 		return
 	}
 
+	if GetAviableStringsCount() > currentFileLines {
+		sorterPool.Tune(int(math.Round(float64(currentFileLines) / 3)))
+	} else {
+		sorterPool.Tune(int(math.Round(float64(GetAviableStringsCount()) / 3)))
+	}
+
 	isFileInProcessing = true
 	go PBarUpdater()
-	go ProcessResult()
+	go SorterProcessResult()
+	go SorterProcessInputLines()
 
 	scanner := bufio.NewScanner(transform.NewReader(file, fileDecoder))
 
 	for ; scanner.Scan(); TMPlinesLen++ {
-		if TMPlinesLen >= GetAviableStringsCount() {
-			sorterWG.Add(TMPlinesLen)
-			SendLinesToPool(tmpLines)
-			currFileCheckedLines += TMPlinesLen
-			TMPlinesLen = 0
-			tmpLines = nil
-		} else {
-			tmpLines = append(tmpLines, scanner.Text())
-		}
+		workWG.Add(1)
+		sorterStringChannelMap[currPath] <- scanner.Text()
 	}
 
-	if len(tmpLines) > 0 {
-		sorterWG.Add(TMPlinesLen)
-		SendLinesToPool(tmpLines)
-		currFileCheckedLines += TMPlinesLen
-		TMPlinesLen = 0
-		tmpLines = nil
-	}
+	workWG.Wait()
+	close(sorterStringChannelMap[currPath])
 
-	checkedLines += int64(currFileCheckedLines) // Прибавляем строки
-	_ = pBar.Finish()                           // Завершаем бар
-	_ = pBar.Exit()                             // Закрываем бар
-	close(fileChannelMap[currPath])
+	checkedLines += int64(TMPlinesLen) // Прибавляем строки
+	_ = pBar.Finish()                  // Завершаем бар
+	_ = pBar.Exit()                    // Закрываем бар
+	close(sorterResultChannelMap[currPath])
 
 	isFileInProcessing = false
 	for !isResultWrited {
@@ -74,17 +111,21 @@ func Sorter(path string) {
 		requestStructMap[request].resultStrings = nil // Чистим список
 	}
 
-	PrintFileSorted(path)                // Пишем файл отсортрован
-	checkedFiles++                       // Прибавляем пройденные файлы
-	invalidLines += currFileInvalidLines // Суммируем невалид строки
-	matchLines += currFileMatchLines     // Суммируем найденые строки
+	sorterResultChannelMap[currPath] = nil // Чистим канал
+	PrintFileSorted(path)                  // Пишем файл отсортрован
+	checkedFiles++                         // Прибавляем пройденные файлы
+	matchLines += currFileMatchLines       // Суммируем найденые строки
 }
 
-func SendLinesToPool(lines []string) {
-	for _, line := range lines {
-		_ = workerPool.Invoke(line)
+func SorterProcessInputLines() {
+	for {
+		if data, ok := <-sorterStringChannelMap[currPath]; !ok {
+			break
+		} else {
+			_ = sorterPool.Invoke(data)
+			continue
+		}
 	}
-	sorterWG.Wait()
 }
 
 /*
@@ -93,29 +134,17 @@ func SendLinesToPool(lines []string) {
 
 */
 
-func ProcessLine(line string) {
-	defer sorterWG.Done()
-	if invalidPattern.MatchString(line) {
-		currFileInvalidLines++
-		return
-	}
-
+func SorterProcessLine(line string) {
+	defer workWG.Done()
 	for _, request := range searchRequests {
 		if result := requestStructMap[request].requestPattern.FindStringSubmatch(line); len(result) == 2 {
-			fileChannelMap[currPath] <- [2]string{request, result[1]}
+			sorterResultChannelMap[currPath] <- [2]string{request, result[1]}
 			return
 		}
 	}
 }
 
-func ProcessResult() {
-	/*
-
-		Обработка результата отдельная ебатория, в питоне все результаты работы из ThreadPoolExecuror сохранялись структом в список,
-		и эта хуйня жрала кучу памяти. Делать пул в данном случае смысла нет, карта не умеет в потокобезопасность и будет сосать бибу.
-		Делать sync.Map - нахуй пойдет скорость. Сейчас реализована дефолт FIFO очередь, самый оптимальный подход по моему мнению.
-
-	*/
+func SorterProcessResult() {
 
 	ResultListMap := make(map[string][]string)
 
@@ -124,11 +153,11 @@ func ProcessResult() {
 	}
 
 	for {
-		if data, ok := <-fileChannelMap[currPath]; !ok {
-			break
-		} else {
+		if data, ok := <-sorterResultChannelMap[currPath]; ok {
 			ResultListMap[data[0]] = append(ResultListMap[data[0]], data[1])
 			continue
+		} else {
+			break
 		}
 	}
 
@@ -138,6 +167,6 @@ func ProcessResult() {
 	}
 
 	ResultListMap = nil   // чистим
-	WriteResult()         // Пишем результат в файл
+	SorterWriteResult()   // Пишем результат в файл
 	isResultWrited = true // сообщаем о том, что файл записан
 }

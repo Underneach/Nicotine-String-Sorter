@@ -15,24 +15,24 @@ import (
 
 */
 
-func WriteResult() {
+func SorterWriteResult() {
 
 	fmt.Print("\n")
 	PrintInfo()
 	fmt.Print("Запись строк в файл\n")
 
 	for _, req := range searchRequests {
-		writerWG.Add(1)
-		_ = writerPool.Invoke(req)
+		sorterWriterWG.Add(1)
+		_ = sorterWriterPool.Invoke(req)
 	}
 
-	writerWG.Wait()
+	sorterWriterWG.Wait()
 	PrintSortInfo()
 }
 
-func Writer(request string) {
+func SorterWriter(request string) {
 
-	defer writerWG.Done()
+	defer sorterWriterWG.Done()
 
 	RSMMutex.RLock()
 
@@ -70,7 +70,7 @@ func Writer(request string) {
 
 */
 
-func RemoveDublesResultFiles() {
+func SorterRemoveDublesResultFiles() {
 	fmt.Print("\n")
 	dublesWG.Add(reqLen)
 
@@ -81,7 +81,7 @@ func RemoveDublesResultFiles() {
 	dublesWG.Wait()
 }
 
-func DublesRemove(request string) {
+func SorterDublesRemove(request string) {
 
 	defer dublesWG.Done()
 

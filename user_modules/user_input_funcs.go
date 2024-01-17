@@ -6,14 +6,42 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
-func GetFilesInput() []string {
+func GetWorkMode() (work string) {
+	PrintWorkModes()
 
-	var result []string
+LoopWork:
+	for {
+		PrintInput()
+		fmt.Print("Выберите тип работы: ")
+		wmraw, _ := userInputReader.ReadString('\n')
+		wmraw = strings.TrimSpace(wmraw)
 
-	for true {
+		switch wmraw {
+		case "1":
+			work = "sorter"
+			break LoopWork
+		case "2":
+			work = "cleaner"
+			break LoopWork
+		/*case "3":
+			work = "replacer"
+			break LoopWork*/
+		case "4":
+			os.Exit(0)
+		default:
+			continue LoopWork
+		}
+	}
+	return work
+}
+
+func GetFilesInput() (result []string) {
+
+	for {
 		PrintInput()
 		fmt.Print("Введите путь к файлу или папке для сортировки: ")
 
@@ -70,9 +98,7 @@ func GetFilesInput() []string {
 	return result
 }
 
-func GetRequestsInput() []string {
-
-	var result []string
+func GetRequestsInput() (requests []string) {
 
 	PrintInfo()
 	fmt.Print("Поддерживаемые типы ввода:\n\n")
@@ -80,7 +106,8 @@ func GetRequestsInput() []string {
 	fmt.Print(" - Ввод из терминала\n")
 	ColorBlue.Print("       2")
 	fmt.Print(" - Ввод из файла\n\n")
-	for true {
+
+	for {
 
 		PrintInput()
 		fmt.Print("Выберите ввод запросов: ")
@@ -101,10 +128,10 @@ func GetRequestsInput() []string {
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
 						continue
 					}
-					result = append(result, request)
+					requests = append(requests, request)
 				}
 
-				if len(result) == 0 {
+				if len(requests) == 0 {
 					PrintErr()
 					fmt.Print("Нет запросов для поиска\n")
 					continue
@@ -145,15 +172,15 @@ func GetRequestsInput() []string {
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
 						continue
 					}
-					result = append(result, request)
+					requests = append(requests, request)
 				}
 
 				PrintSuccess()
 				fmt.Print("Файл с запросами найден : ")
-				ColorBlue.Print(len(result))
+				ColorBlue.Print(len(requests))
 				fmt.Print(" запросов\n")
 
-				if len(result) == 0 {
+				if len(requests) == 0 {
 					PrintErr()
 					fmt.Print("Нет запросов для поиска\n")
 					continue
@@ -166,33 +193,55 @@ func GetRequestsInput() []string {
 		}
 		break
 	}
-	return Unique(result)
+	return Unique(requests)
 }
 
-func GetSaveTypeInput() string {
-
-	var result string
+func GetSaveTypeInput() (saveType string) {
 
 	PrintInfo()
 	fmt.Print("Поддерживаемые типы сохранения:\n\n")
 	ColorBlue.Print("       1")
-	fmt.Print(" - log:pass (")
-	ColorBlue.Print("по умолчанию")
-	fmt.Print(")\n")
+	fmt.Print(" - log:pass\n")
 	ColorBlue.Print("       2")
 	fmt.Print(" - url:log:pass\n\n")
+
+Loop:
 	for true {
 		PrintInput()
 		fmt.Print("Выберите тип сохранения: ")
 		rawSaveType, _ := userInputReader.ReadString('\n')
 		rawSaveType = strings.TrimSpace(rawSaveType)
 
-		if rawSaveType == "1" || rawSaveType == "2" {
-			result = rawSaveType
+		switch rawSaveType {
+		case "1", "2":
+			saveType = rawSaveType
 			fmt.Print("\n")
-			break
+			break Loop
+		default:
+			continue Loop
 		}
 	}
+	return saveType
+}
 
-	return result
+func GetPartsInput() (partNum int) {
+	PrintInfo()
+	fmt.Print("\n       Расположение частей строки 0:1:2\n\n")
+LoopPart:
+	for {
+		PrintInput()
+		fmt.Print("Введите новый порядок расположения частей: ")
+
+		inputPartRaw, _ := userInputReader.ReadString('\n')
+		inputPartRaw = strings.TrimSpace(inputPartRaw)
+		inputPart, err := strconv.Atoi(inputPartRaw)
+
+		if (partRegex.MatchString(inputPartRaw)) && (err != nil) {
+			partNum = inputPart
+			break LoopPart
+		} else {
+			continue LoopPart
+		}
+	}
+	return
 }

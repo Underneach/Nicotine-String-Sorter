@@ -24,15 +24,21 @@ func CheckUpdate(appVersion string) {
 	httpClient := &http.Client{Timeout: 5 * time.Second}
 
 	resp, err = httpClient.Get("https://api.github.com/repos/Underneach/Nicotine-String-Sorter/releases/latest")
-	if err != nil || resp.StatusCode != 200 {
+	if err != nil {
+		WaitLogo()
+		PrintErr()
+		fmt.Print("Не удалось проверить обновления : ", err, "\n\n")
+		return
+	}
+
+	if resp.StatusCode != 200 {
 		WaitLogo()
 		PrintErr()
 		fmt.Print("Не удалось проверить обновления : Код HTTP ", resp.StatusCode, "\n\n")
 		return
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&apiResponse)
-	if err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		WaitLogo()
 		PrintErr()
 		fmt.Print("Не удалось проверить обновления : ", err, "\n\n")

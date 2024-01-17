@@ -1,7 +1,6 @@
 package user_modules
 
 import (
-	"String-Sorter/work_modules"
 	"fmt"
 	"github.com/klauspost/cpuid/v2"
 	"github.com/pbnjay/memory"
@@ -43,7 +42,7 @@ func PrintLogoStart(appVersion string) {
 	ColorGreen.Print("#")
 	fmt.Print(" zelenka.guru/rx580    # НикотиновыйКодер\n\n")
 	PrintInfo()
-	fmt.Print(cpuid.CPU.BrandName, " @ ", math.Round(float64(cpuid.CPU.BoostFreq/1000000000)), "GHz @ ", cpuid.CPU.PhysicalCores, "/", cpuid.CPU.LogicalCores, " потоков\n")
+	fmt.Print(cpuid.CPU.BrandName, " @ ", cpuid.CPU.PhysicalCores, "/", cpuid.CPU.LogicalCores, " потоков\n")
 	PrintInfo()
 	fmt.Print(math.Round(float64(memory.FreeMemory()/1073741824)), "/", math.Round(float64(memory.TotalMemory()/1073741824)), " Гб доступной памяти\n\n")
 	isLogoPrinted = true
@@ -96,38 +95,45 @@ func PrintInputData(appVersion string) string {
 	fmt.Print(": Строк : ")
 	ColorBlue.Print("~", filesSize/80, "\n")
 
-	PrintInfo()
-	fmt.Printf("Всего запросов : ")
+	switch workMode {
+	case "sorter":
+		PrintInfo()
+		fmt.Printf("Всего запросов : ")
 
-	reqLen := len(searchRequests)
+		reqLen := len(searchRequests)
 
-	switch {
-	case reqLen <= 3:
-		ColorBlue.Print(reqLen)
-		fmt.Print(" : ")
-		for i, req := range searchRequests {
-			ColorBlue.Print(req)
-			if i != reqLen-1 {
-				fmt.Print(", ")
+		switch {
+		case reqLen <= 3:
+			ColorBlue.Print(reqLen)
+			fmt.Print(" : ")
+			for i, req := range searchRequests {
+				ColorBlue.Print(req)
+				if i != reqLen-1 {
+					fmt.Print(", ")
+				}
 			}
-		}
-		fmt.Print("\n")
-	case reqLen > 3 && reqLen <= 10:
-		ColorBlue.Print(reqLen, "\n")
-		for _, request := range searchRequests {
-			fmt.Println("    ", request)
-		}
-		fmt.Print("\n")
-	case reqLen > 10:
-		ColorBlue.Print(reqLen, "\n\n")
+			fmt.Print("\n")
+		case reqLen > 3 && reqLen <= 10:
+			ColorBlue.Print(reqLen, "\n")
+			for _, request := range searchRequests {
+				fmt.Println("    ", request)
+			}
+			fmt.Print("\n")
+		case reqLen > 10:
+			ColorBlue.Print(reqLen, "\n\n")
 
+		}
+
+	case "cleaner":
+
+	case "replacer":
 	}
 
 	PrintInput()
 	fmt.Print("Выберите действие:\n\n")
 
 	ColorBlue.Print("	1")
-	fmt.Print(" - Запустить сортер\n")
+	fmt.Print(" - Продолжить\n")
 	ColorBlue.Print("	2")
 	fmt.Print(" - Ввести данные заново\n\n")
 	for true {
@@ -146,36 +152,16 @@ func PrintInputData(appVersion string) string {
 	return returnData
 }
 
-func PrintResult(Duration time.Duration, checkedLines int64, invalidLines int64, matchLines int64, totalFiles int, checkedFiles int) {
-
-	fmt.Print("\n\n")
-	PrintSuccess()
-	fmt.Print("Файлов отсортировано : ")
-	ColorBlue.Print(checkedFiles)
-	fmt.Print(" из ")
-	ColorBlue.Print(totalFiles, "\n")
-
-	PrintSuccess()
-	fmt.Print("Строк отсортировано : ")
-	ColorBlue.Print(checkedLines, "\n")
-
-	PrintSuccess()
-	fmt.Print("Подходящих строк : ")
-	ColorGreen.Print(matchLines, "\n")
-
-	work_modules.PrintWarn()
-	fmt.Print("Невалидных строк : ")
-	ColorYellow.Print(invalidLines, "\n")
-
+func PrintTimeDuration(duration time.Duration) {
 	fmt.Print("\n")
 	PrintSuccess()
 	fmt.Print("Время сортировки : ")
-	ColorBlue.Print(Duration, "\n\n\n")
+	ColorBlue.Print(duration, "\n\n\n")
 
 	PrintInfo()
 	fmt.Print("Нажмите ")
 	ColorBlue.Print("Enter")
-	fmt.Print(" для выхода")
+	fmt.Print(" для выхода\n\n\n")
 	fmt.Scanln()
 	os.Exit(0)
 }
@@ -208,4 +194,21 @@ func PrintInfo() {
 	fmt.Print("[")
 	ColorMagenta.Print("*")
 	fmt.Print("] ")
+}
+
+func PrintWorkModes() {
+	PrintInfo()
+	fmt.Print("Поддерживаемые типы работы:\n\n")
+	ColorBlue.Print("       1")
+	fmt.Print(" - Сортер строк по запросам\n")
+	ColorBlue.Print("       2")
+	fmt.Print(" - Клинер базы от невалид строк")
+	ColorBlue.Print("*")
+	fmt.Print(" и дубликатов\n")
+	/*ColorBlue.Print("       3")
+	fmt.Print(" - Свитчер частей строк\n")*/
+	ColorBlue.Print("       4")
+	fmt.Print(" - Закрыть программу\n\n")
+	ColorBlue.Print("       *")
+	fmt.Print(" A-z / 0-9 / Специмволы  | 10-256 символов | UNKNOWN\n\n")
 }

@@ -9,8 +9,9 @@ require (
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // Получение кол ва достпной оперы
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // Определение кодировки файла
 	github.com/schollz/progressbar/v3 v3.14.1 // Прогресс бар
-	golang.org/x/net v0.19.0 // Получение кодировки из строки с названием
+	golang.org/x/net v0.20.0 // Получение кодировки из строки с названием
 	golang.org/x/text v0.14.0 // Трансформатор ебать
+	github.com/cespare/xxhash v1.1.0 // Хеш
 )
 
 require (
