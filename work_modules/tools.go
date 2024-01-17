@@ -141,7 +141,7 @@ func GetRunDir() (rundir string) {
 	}
 
 	if _, err := os.Stat(path + `/result/`); os.IsNotExist(err) {
-		if err := os.Mkdir("a", os.ModePerm); err == nil {
+		if err := os.Mkdir("result", os.ModePerm); err == nil {
 			rundir = path + `/result/`
 		} else {
 			rundir = path
