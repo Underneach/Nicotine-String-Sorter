@@ -36,12 +36,11 @@ func SorterWriter(request string) {
 
 	RSMMutex.RLock()
 
-	lines := requestStructMap[request].resultStrings
 	path := requestStructMap[request].resultFile
 
 	RSMMutex.RUnlock()
 
-	if len(lines) == 0 {
+	if len(requestStructMap[request].resultStrings) == 0 {
 		PrintErr()
 		ColorBlue.Print(request)
 		fmt.Print(" : Нет строк для записи\n")
@@ -55,13 +54,13 @@ func SorterWriter(request string) {
 		return
 	}
 
-	if _, err := bufio.NewWriter(transform.NewWriter(resultFile, unicode.UTF8.NewDecoder())).WriteString(strings.Join(lines, "\n")); err != nil {
+	if _, err := bufio.NewWriter(transform.NewWriter(resultFile, unicode.UTF8.NewDecoder())).WriteString(strings.Join(requestStructMap[request].resultStrings, "\n")); err != nil {
 		PrintResultWriteErr(request, err)
 		return
 	}
 
 	_ = resultFile.Close()
-	lines = nil
+	requestStructMap[request].resultStrings = nil
 }
 
 /*

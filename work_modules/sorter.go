@@ -37,7 +37,7 @@ func RunSorter() {
 
 		currentStruct := new(Work)
 		currentStruct.requestPattern = compiledRegEx
-		currentStruct.resultFile = runDir + `\` + fileBadSymbolsPattern.ReplaceAllString(request, "_") + ".txt"
+		currentStruct.resultFile = runDir + fileBadSymbolsPattern.ReplaceAllString(request, "_") + ".txt"
 		requestStructMap[request] = currentStruct
 	}
 
@@ -162,7 +162,7 @@ func SorterProcessResult() {
 	}
 
 	for _, request := range searchRequests {
-		currFileMatchLines = int64(len(ResultListMap[request]))
+		currFileMatchLines += int64(len(ResultListMap[request]))
 		requestStructMap[request].resultStrings = ResultListMap[request]
 	}
 

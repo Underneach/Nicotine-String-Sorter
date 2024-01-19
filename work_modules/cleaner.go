@@ -17,7 +17,7 @@ func RunCleaner() {
 	fmt.Print("Запуск Клинера...")
 
 	for _, path := range filePathList {
-		cleanerOutputFilesMap[path] = GetRunDir() + `\` + strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)) + "_cleaned.txt"
+		cleanerOutputFilesMap[path] = GetRunDir() + strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)) + "_cleaned.txt"
 	}
 	fmt.Print("\r")
 	PrintSuccess()
@@ -29,6 +29,7 @@ func Cleaner(path string) {
 	currPath = path
 	cleanerStringChannelMap[currPath] = make(chan string)
 	cleanerResultChannelMap[currPath] = make(chan string)
+	cleanerStringHashMap = make(map[uint64]bool)
 	TMPlinesLen = 0
 	currFileDubles = 0
 	currFileWritedString = 0
@@ -63,6 +64,7 @@ func Cleaner(path string) {
 	}
 
 	scanner := bufio.NewScanner(transform.NewReader(readFile, fileDecoder))
+	isFileInProcessing = true
 
 	go PBarUpdater()
 	go CleanerProcessInputLines()
@@ -73,10 +75,10 @@ func Cleaner(path string) {
 		cleanerStringChannelMap[currPath] <- scanner.Text()
 	}
 
-	workWG.Wait()
-	close(cleanerStringChannelMap[currPath])
-	close(cleanerResultChannelMap[currPath])
-
+	workWG.Wait()                               // Ждем горутины
+	isFileInProcessing = false                  // Останавливаем пбар
+	close(cleanerStringChannelMap[currPath])    // Закрываем каналы
+	close(cleanerResultChannelMap[currPath])    //
 	checkedLines += int64(TMPlinesLen)          // Прибавляем строки
 	cleanerDublesLen += currFileDubles          //
 	cleanerWritedString += currFileWritedString //

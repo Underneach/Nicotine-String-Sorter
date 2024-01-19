@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"github.com/fatih/color"
 	"os"
-	"regexp"
 	"runtime"
 	"sync"
 )
@@ -24,10 +23,8 @@ var (
 	userOs          = runtime.GOOS              // ОС юзера
 	updateWG        sync.WaitGroup              // ВГ обновы
 	isLogoPrinted   = false                     // Напечатано ли лого
-	partRegex, _    = regexp.Compile(`[^0-9]+`)
 	workMode        string
 	filePathList    []string
 	searchRequests  []string
 	saveType        string
-	numParts        int
 )

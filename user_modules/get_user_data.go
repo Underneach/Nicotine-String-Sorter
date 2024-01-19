@@ -1,6 +1,6 @@
 package user_modules
 
-func GetUserInputData(appVersion string) (string, []string, []string, string, int) {
+func GetUserInputData(appVersion string) (string, []string, []string, string) {
 
 	updateWG.Add(1)
 	go CheckUpdate(appVersion)
@@ -21,10 +21,6 @@ LoopInput:
 		case "cleaner":
 			searchRequests = nil
 			saveType = ""
-		case "replacer":
-			numParts = GetPartsInput()
-			searchRequests = nil
-			saveType = ""
 		}
 
 		switch PrintInputData(appVersion) {
@@ -39,5 +35,5 @@ LoopInput:
 
 	PrintLogoFast(appVersion)
 
-	return workMode, filePathList, searchRequests, saveType, numParts
+	return workMode, filePathList, searchRequests, saveType
 }

@@ -2,8 +2,8 @@ package work_modules
 
 import "time"
 
-func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _numParts int) (startTime time.Time) {
-	InitVar(_workMode, _filePathList, _searchRequests, _saveType, _numParts)
+func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string) (startTime time.Time) {
+	InitVar(_workMode, _filePathList, _searchRequests, _saveType)
 
 	startTime = time.Now()
 
@@ -24,8 +24,6 @@ func Run(_workMode string, _filePathList []string, _searchRequests []string, _sa
 			Cleaner(filePath)
 		}
 		PrintCleanerResult()
-	case "replacer":
-		InitPartSwitcher()
 	}
 
 	return startTime

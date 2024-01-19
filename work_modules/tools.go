@@ -131,24 +131,23 @@ func GetCurrentFileSize(path string) error {
 }
 
 func GetRunDir() (rundir string) {
-
 	var path string
 
-	if dir, err := os.Executable(); err != nil {
+	if dir, cerr := os.Executable(); cerr != nil {
 		path = "."
 	} else {
 		path = filepath.Dir(dir)
 	}
 
-	if _, err := os.Stat(path + `/result/`); os.IsNotExist(err) {
-		if err := os.Mkdir("result", os.ModePerm); err == nil {
-			rundir = path + `/result/`
+	if _, aerr := os.Stat(path + `\result\`); os.IsNotExist(aerr) {
+		if verr := os.Mkdir(path+`\result\`, os.ModePerm); verr == nil {
+			rundir = path + `\result\`
 		} else {
-			rundir = path
+			rundir = path + `\`
 		}
 	} else {
-		rundir = path + `/result/`
+		rundir = path + `\result\`
 	}
 
-	return path
+	return rundir
 }

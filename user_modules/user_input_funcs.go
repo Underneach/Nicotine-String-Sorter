@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -27,9 +26,6 @@ LoopWork:
 		case "2":
 			work = "cleaner"
 			break LoopWork
-		/*case "3":
-			work = "replacer"
-			break LoopWork*/
 		case "4":
 			os.Exit(0)
 		default:
@@ -222,26 +218,4 @@ Loop:
 		}
 	}
 	return saveType
-}
-
-func GetPartsInput() (partNum int) {
-	PrintInfo()
-	fmt.Print("\n       Расположение частей строки 0:1:2\n\n")
-LoopPart:
-	for {
-		PrintInput()
-		fmt.Print("Введите новый порядок расположения частей: ")
-
-		inputPartRaw, _ := userInputReader.ReadString('\n')
-		inputPartRaw = strings.TrimSpace(inputPartRaw)
-		inputPart, err := strconv.Atoi(inputPartRaw)
-
-		if (partRegex.MatchString(inputPartRaw)) && (err != nil) {
-			partNum = inputPart
-			break LoopPart
-		} else {
-			continue LoopPart
-		}
-	}
-	return
 }

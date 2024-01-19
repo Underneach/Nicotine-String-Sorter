@@ -72,16 +72,11 @@ var (
 	currFileWritedString    int64                               = 0                     //
 	cleanerStringHashMap                                        = make(map[uint64]bool) // Мапа хешей строк
 
-	// Свитчер
-	switcherPool *ants.MultiPoolWithFunc // Пул свичера
-	partList     []int                   // Лист частей строки
-
 	// Арги
 	filePathList   []string
 	searchRequests []string
 	saveType       string
 	workMode       string
-	numParts       int
 )
 
 type Work struct {
@@ -90,12 +85,11 @@ type Work struct {
 	resultFile     string         // Название файла с найдеными строками
 }
 
-func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _numParts int) {
+func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string) {
 	workMode = _workMode
 	filePathList = _filePathList
 	searchRequests = _searchRequests
 	saveType = _saveType
-	numParts = _numParts
 }
 
 func InitSorter() {
@@ -161,25 +155,6 @@ func InitCleaner() {
 	if poolerr != nil {
 		PrintErr()
 		ColorRed.Print("Невозможно запустить клинер : Ошибка пула клинера : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
-		_, _ = fmt.Scanln()
-		os.Exit(1)
-	}
-}
-
-func InitPartSwitcher() {
-	var poolerr error
-
-	switcherPool, poolerr = ants.NewMultiPoolWithFunc(
-		runtime.NumCPU(),
-		100000,
-		func(line interface{}) {},
-		ants.RoundRobin,
-		ants.WithPreAlloc(true),
-	)
-
-	if poolerr != nil {
-		PrintErr()
-		ColorRed.Print("Невозможно запустить свитчер : Ошибка пула свитчера : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
 		_, _ = fmt.Scanln()
 		os.Exit(1)
 	}

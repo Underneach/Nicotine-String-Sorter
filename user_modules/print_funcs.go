@@ -125,15 +125,13 @@ func PrintInputData(appVersion string) string {
 		}
 
 	case "cleaner":
-
-	case "replacer":
 	}
 
 	PrintInput()
 	fmt.Print("Выберите действие:\n\n")
 
 	ColorBlue.Print("	1")
-	fmt.Print(" - Продолжить\n")
+	fmt.Print(" - Запустить\n")
 	ColorBlue.Print("	2")
 	fmt.Print(" - Ввести данные заново\n\n")
 	for true {
