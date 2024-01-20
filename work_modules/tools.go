@@ -100,20 +100,6 @@ func DoGetEncodingDecoder(path string) *encoding.Decoder {
 	return decoder
 }
 
-func Unique(slice []string) []string {
-
-	inResult := make(map[string]bool)
-	var result []string
-	for _, str := range slice {
-		if _, ok := inResult[str]; !ok {
-			inResult[str] = true
-			result = append(result, str)
-		}
-	}
-	inResult = nil
-	return result
-}
-
 func GetCurrentFileSize(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {

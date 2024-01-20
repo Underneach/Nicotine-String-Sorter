@@ -14,7 +14,6 @@ func Run(_workMode string, _filePathList []string, _searchRequests []string, _sa
 		for _, filePath := range filePathList {
 			Sorter(filePath)
 		}
-		SorterRemoveDublesResultFiles()
 		PrintSorterResult()
 
 	case "cleaner":

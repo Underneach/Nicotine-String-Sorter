@@ -80,10 +80,11 @@ func PrintFileSorted(path string) {
 }
 
 func PrintSortInfo() {
+	fmt.Print("\n")
 	switch {
 	case reqLen <= 10:
 		for _, request := range searchRequests {
-			strLen := len(requestStructMap[request].resultStrings)
+			strLen := sorterRequestStatMapCurrFile[request]
 			if strLen > 0 {
 				PrintSuccess()
 				ColorBlue.Print(request)
@@ -98,9 +99,13 @@ func PrintSortInfo() {
 		ColorBlue.Print(currFileMatchLines)
 		fmt.Print(" подходящих строк по всем запросам\n")
 	}
+	PrintInfo()
+	ColorYellow.Print(currFileDubles)
+	fmt.Print(" Повторов по всем запросам\n")
 }
 
 func PrintClearInfo() {
+	fmt.Print("\n")
 	PrintInfo()
 	ColorBlue.Print(TMPlinesLen)
 	fmt.Print(" строк : ")
@@ -169,13 +174,6 @@ func PrintResultWriteErr(request string, err error) {
 	fmt.Print("Запустите сортер с правами Администратора, если ошибка связана с доступом\n")
 }
 
-func PrintRemoveDublesErr(request string, err error) {
-	PrintErr()
-	ColorBlue.Print(request)
-	fmt.Print(" : Ошибка удаления дублей : ")
-	ColorRed.Print(err, "\n")
-}
-
 func PrintEncodingErr(err error) {
 	PrintErr()
 	fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
@@ -190,7 +188,17 @@ func PrintEndodingLinesEnd() {
 
 func PrintSorterResult() {
 
+	fmt.Print("\n")
+	for _, request := range searchRequests {
+		PrintSuccess()
+		ColorBlue.Print(request)
+		fmt.Print(" : ")
+		ColorBlue.Print(sorterRequestStatMap[request])
+		fmt.Print(" строк : ")
+		ColorBlue.Print(requestStructMap[request].resultFile, "\n")
+	}
 	fmt.Print("\n\n")
+
 	PrintSuccess()
 	fmt.Print("Файлов отсортировано : ")
 	ColorBlue.Print(checkedFiles)
@@ -204,6 +212,10 @@ func PrintSorterResult() {
 	PrintSuccess()
 	fmt.Print("Подходящих строк : ")
 	ColorGreen.Print(matchLines, "\n")
+
+	PrintWarn()
+	fmt.Print("Повторяющихся строк : ")
+	ColorGreen.Print(sorterDubles, "\n\n")
 }
 
 func PrintCleanerResult() {

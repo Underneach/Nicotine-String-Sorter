@@ -1,6 +1,7 @@
 package work_modules
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/panjf2000/ants/v2"
@@ -41,19 +42,19 @@ var (
 	TMPlinesLen                                       = 0                               // Чанк строк в файле
 
 	// Сортер
-	currFileMatchLines     int64                             = 0                      //
-	matchLines             int64                             = 0                      // Кол во подошедших строк
-	reqLen                                                   = 0                      // Кол во запросов
-	requestStructMap                                         = make(map[string]*Work) // Карта со структурой для каждого запроса
-	sorterPool             *ants.MultiPoolWithFunc                                    // Пул сортера
-	sorterWriterPool       *ants.PoolWithFunc                                         // Пул записи
-	sorterWriterWG         sync.WaitGroup                                             // Синхронизатор очка пула записи
-	sorterResultChannelMap = make(map[string]chan [2]string)                          // Мапа каналов
-	RSMMutex               sync.RWMutex                                               // Мютекс карты со структурой для каждого запроса
-	dublesPool             *ants.PoolWithFunc                                         // Пул удаления дублей
-	dublesWG               sync.WaitGroup                                             // Синхронизатор очка пула дублей
-	dublesMutex            sync.Mutex                                                 // Мютекс вывода результата дублей
-	sorterStringChannelMap = make(map[string]chan string)                             // Мапа строк
+	currFileMatchLines           int64                             = 0                      //
+	matchLines                   int64                             = 0                      // Кол во подошедших строк
+	reqLen                                                         = 0                      // Кол во запросов
+	sorterDubles                 int64                             = 0                      // Кол во повторяющихся строк
+	requestStructMap                                               = make(map[string]*Work) // Карта со структурой для каждого запроса
+	sorterPool                   *ants.MultiPoolWithFunc                                    // Пул сортера
+	sorterWriteChannelMap        = make(map[string]chan [2]string)                          // Мапа каналов
+	sorterRequestStatMap         = make(map[string]int64)                                   // Колво найденных для каждого запроса
+	sorterRequestStatMapCurrFile = make(map[string]int64)                                   // Колво найденных для каждого запроса
+	sorterResultWriterMap        = make(map[string]*bufio.Writer)                           // Мапа врайтера для каждого запроса
+	sorterResultFileMap          = make(map[string]*os.File)                                // Мапа файла для каждого запроса
+	sorterStringHashMap          = make(map[uint64]bool)                                    // Мапа хешей строк
+	sorterStringChannelMap       = make(map[string]chan string)                             // Мапа строк
 
 	// Клинер
 	cleanerPool             *ants.MultiPoolWithFunc                                     // Пул клинера
@@ -81,7 +82,6 @@ var (
 
 type Work struct {
 	requestPattern *regexp.Regexp // Регулярка запроса
-	resultStrings  []string       // Найденые строки
 	resultFile     string         // Название файла с найдеными строками
 }
 
@@ -98,32 +98,7 @@ func InitSorter() {
 
 	// Инициализируем каналы
 	for _, path := range filePathList {
-		sorterResultChannelMap[path] = make(chan [2]string)
-	}
-
-	sorterWriterPool, poolerr = ants.NewPoolWithFunc(
-		len(searchRequests),
-		func(request interface{}) { SorterWriter(request.(string)) },
-		ants.WithPreAlloc(true),
-	)
-
-	if poolerr != nil {
-		PrintErr()
-		ColorRed.Print("Невозможно запустить сортер : Ошибка пула записи : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
-		_, _ = fmt.Scanln()
-		os.Exit(1)
-	}
-
-	dublesPool, poolerr = ants.NewPoolWithFunc(
-		len(searchRequests),
-		func(request interface{}) { SorterDublesRemove(request.(string)) },
-		ants.WithPreAlloc(true))
-
-	if poolerr != nil {
-		PrintErr()
-		ColorRed.Print("Невозможно запустить сортер : Ошибка пула удаления дублей : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
-		_, _ = fmt.Scanln()
-		os.Exit(1)
+		sorterWriteChannelMap[path] = make(chan [2]string)
 	}
 
 	sorterPool, poolerr = ants.NewMultiPoolWithFunc(

@@ -14,7 +14,7 @@ func GetFilesSize(flist []string) {
 			fmt.Printf("%s : Ошибка получения размера файла : %s\n", path, err)
 			continue
 		} else {
-			filesSize = +info.Size()
+			filesSize += info.Size()
 		}
 	}
 }

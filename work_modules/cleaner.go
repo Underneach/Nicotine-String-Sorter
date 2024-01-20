@@ -3,7 +3,7 @@ package work_modules
 import (
 	"bufio"
 	"fmt"
-	"github.com/cespare/xxhash"
+	"github.com/zeebo/xxh3"
 	"golang.org/x/text/transform"
 	"math"
 	"os"
@@ -44,7 +44,7 @@ func Cleaner(path string) {
 	PrintLinesChunk()
 	fileDecoder = GetEncodingDecoder(path)
 
-	readFile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	cleanerReadFile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 
 	if err != nil {
 		PrintFileReadErr(path, err)
@@ -63,7 +63,7 @@ func Cleaner(path string) {
 		cleanerPool.Tune(int(math.Round(float64(i) / 3)))
 	}
 
-	scanner := bufio.NewScanner(transform.NewReader(readFile, fileDecoder))
+	scanner := bufio.NewScanner(transform.NewReader(cleanerReadFile, fileDecoder))
 	isFileInProcessing = true
 
 	go PBarUpdater()
@@ -85,7 +85,7 @@ func Cleaner(path string) {
 	cleanerInvalidLen += currFileInvalidLen     //
 	_ = pBar.Finish()                           // Завершаем бар
 	_ = pBar.Exit()                             // Закрываем бар
-	readFile.Close()                            // Закрываем файл
+	cleanerReadFile.Close()                     // Закрываем файл
 	cleanerWriteFile.Close()                    // Закрываем файл
 	cleanerStringChannelMap[currPath] = nil     // Чистим канал
 	cleanerResultChannelMap[currPath] = nil     // 
@@ -110,7 +110,7 @@ func CleanerProcessInputLines() {
 func CleanerProcessString(line string) {
 	defer workWG.Done()
 	if validPattern.MatchString(line) && !uncknownPattern.MatchString(line) {
-		hash := xxhash.Sum64String(line)
+		hash := xxh3.HashString(line)
 		CHMMutex.Lock()
 		if _, ok := cleanerStringHashMap[hash]; !ok {
 			cleanerStringHashMap[hash] = true

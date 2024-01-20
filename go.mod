@@ -11,8 +11,10 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.1 // Прогресс бар
 	golang.org/x/net v0.20.0 // Получение кодировки из строки с названием
 	golang.org/x/text v0.14.0 // Трансформатор ебать
-	github.com/cespare/xxhash v1.1.0 // Хеш
+	github.com/zeebo/xxh3 v1.0.2 // Хеш
 )
+
+
 
 require (
 	github.com/mattn/go-colorable v0.1.13 // indirect

@@ -42,8 +42,7 @@ func PrintLogoStart(appVersion string) {
 	ColorGreen.Print("#")
 	fmt.Print(" zelenka.guru/rx580    # НикотиновыйКодер\n\n")
 	PrintInfo()
-	fmt.Print(cpuid.CPU.BrandName, " @ ", cpuid.CPU.PhysicalCores, "/", cpuid.CPU.LogicalCores, " потоков\n")
-	PrintInfo()
+	fmt.Print(cpuid.CPU.BrandName, " @ ", cpuid.CPU.PhysicalCores, "/", cpuid.CPU.LogicalCores, " потоков | ")
 	fmt.Print(math.Round(float64(memory.FreeMemory()/1073741824)), "/", math.Round(float64(memory.TotalMemory()/1073741824)), " Гб доступной памяти\n\n")
 	isLogoPrinted = true
 }
@@ -80,18 +79,13 @@ func PrintLogoFast(appVersion string) {
 func PrintInputData(appVersion string) string {
 	ClearTerm()
 	PrintLogoFast(appVersion)
+	
 	PrintInfo()
 	fmt.Print("Всего файлов : ")
 	ColorBlue.Print(len(filePathList))
 	fmt.Print(" : Объем : ")
-	if filesSize < 1610612736 {
-		ColorBlue.Print(filesSize / 1048576)
-		fmt.Print(" Мб ")
-	} else {
-		ColorBlue.Print(filesSize / 1073741824)
-		fmt.Print(" Гб ")
-	}
-
+	ColorBlue.Print(filesSize / 1048576)
+	fmt.Print(" Мб ")
 	fmt.Print(": Строк : ")
 	ColorBlue.Print("~", filesSize/80, "\n")
 
@@ -198,15 +192,13 @@ func PrintWorkModes() {
 	PrintInfo()
 	fmt.Print("Поддерживаемые типы работы:\n\n")
 	ColorBlue.Print("       1")
-	fmt.Print(" - Сортер строк по запросам\n")
+	fmt.Print(" - Сортер строк\n")
+	fmt.Print("       Поиск строк в базе подходящих под запросы и запись в отдельный файл с удалением повторов\n")
+	fmt.Print("       Запрос должен быть в формате 'google.com' или 'google'\n\n")
 	ColorBlue.Print("       2")
-	fmt.Print(" - Клинер базы от невалид строк")
-	ColorBlue.Print("*")
-	fmt.Print(" и дубликатов\n")
-	/*ColorBlue.Print("       3")
-	fmt.Print(" - Свитчер частей строк\n")*/
+	fmt.Print(" - Клинер базы от невалид строк и дубликатов\n")
+	fmt.Print("       Удаление повторов и строк не подходящих под 'A-z / 0-9 / Специмволы | 10-256 символов | без UNKNOWN'\n")
+	fmt.Print("       Для каждой базы будет создан отдельный файл\n\n")
 	ColorBlue.Print("       4")
 	fmt.Print(" - Закрыть программу\n\n")
-	ColorBlue.Print("       *")
-	fmt.Print(" A-z / 0-9 / Специмволы  | 10-256 символов | UNKNOWN\n\n")
 }

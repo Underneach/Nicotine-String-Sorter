@@ -3,6 +3,8 @@ package work_modules
 import (
 	"bufio"
 	"fmt"
+	"github.com/zeebo/xxh3"
+	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 	"math"
 	"os"
@@ -26,7 +28,7 @@ func RunSorter() {
 		case "1":
 			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*:(.+:.+)")
 		case "2":
-			compiledRegEx, err = regexp.Compile("(" + ".*" + regexp.QuoteMeta(request) + ".*:.+:.+)")
+			compiledRegEx, err = regexp.Compile("(.*" + regexp.QuoteMeta(request) + ".*:.+:.+)")
 		}
 
 		if err != nil {
@@ -54,9 +56,14 @@ func Sorter(path string) {
 
 	currPath = path
 	sorterStringChannelMap[currPath] = make(chan string)
+	sorterStringHashMap = make(map[uint64]bool)
 	isFileInProcessing = false
 	isResultWrited = false
 	TMPlinesLen = 0
+	currFileDubles = 0
+	for _, req := range searchRequests {
+		sorterRequestStatMapCurrFile[req] = 0
+	}
 
 	if err := GetCurrentFileSize(path); err != nil {
 		PrintFileReadErr(path, err)
@@ -82,7 +89,7 @@ func Sorter(path string) {
 
 	isFileInProcessing = true
 	go PBarUpdater()
-	go SorterProcessResult()
+	go SorterWriteResult()
 	go SorterProcessInputLines()
 
 	scanner := bufio.NewScanner(transform.NewReader(file, fileDecoder))
@@ -98,7 +105,7 @@ func Sorter(path string) {
 	checkedLines += int64(TMPlinesLen) // Прибавляем строки
 	_ = pBar.Finish()                  // Завершаем бар
 	_ = pBar.Exit()                    // Закрываем бар
-	close(sorterResultChannelMap[currPath])
+	close(sorterWriteChannelMap[currPath])
 
 	isFileInProcessing = false
 	for !isResultWrited {
@@ -107,14 +114,12 @@ func Sorter(path string) {
 
 	file.Close() // Закрываем файл
 
-	for _, request := range searchRequests {
-		requestStructMap[request].resultStrings = nil // Чистим список
-	}
-
-	sorterResultChannelMap[currPath] = nil // Чистим канал
-	PrintFileSorted(path)                  // Пишем файл отсортрован
-	checkedFiles++                         // Прибавляем пройденные файлы
-	matchLines += currFileMatchLines       // Суммируем найденые строки
+	sorterWriteChannelMap[currPath] = nil // Чистим канал
+	PrintSortInfo()
+	PrintFileSorted(path)            // Пишем файл отсортрован
+	checkedFiles++                   // Прибавляем пройденные файлы
+	matchLines += currFileMatchLines // Суммируем найденые строки
+	sorterDubles += currFileDubles
 }
 
 func SorterProcessInputLines() {
@@ -128,33 +133,37 @@ func SorterProcessInputLines() {
 	}
 }
 
-/*
-
-Обрабатываем строку
-
-*/
-
 func SorterProcessLine(line string) {
 	defer workWG.Done()
 	for _, request := range searchRequests {
 		if result := requestStructMap[request].requestPattern.FindStringSubmatch(line); len(result) == 2 {
-			sorterResultChannelMap[currPath] <- [2]string{request, result[1]}
+			sorterWriteChannelMap[currPath] <- [2]string{request, result[1]}
 			return
 		}
 	}
 }
 
-func SorterProcessResult() {
-
-	ResultListMap := make(map[string][]string)
+func SorterWriteResult() {
 
 	for _, request := range searchRequests {
-		ResultListMap[request] = requestStructMap[request].resultStrings
+		if resultFile, err := os.OpenFile(requestStructMap[request].resultFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
+			sorterResultFileMap[request] = resultFile
+			sorterResultWriterMap[request] = bufio.NewWriter(transform.NewWriter(resultFile, unicode.UTF8.NewDecoder()))
+		} else {
+			PrintResultWriteErr(request, err)
+		}
 	}
 
 	for {
-		if data, ok := <-sorterResultChannelMap[currPath]; ok {
-			ResultListMap[data[0]] = append(ResultListMap[data[0]], data[1])
+		if data, ok := <-sorterWriteChannelMap[currPath]; ok {
+			hash := xxh3.HashString(data[1])
+			if _, ok := sorterStringHashMap[hash]; !ok {
+				sorterStringHashMap[hash] = true
+				sorterResultWriterMap[data[0]].WriteString(data[1] + "\n")
+				sorterRequestStatMapCurrFile[data[0]]++
+			} else {
+				currFileDubles++
+			}
 			continue
 		} else {
 			break
@@ -162,11 +171,10 @@ func SorterProcessResult() {
 	}
 
 	for _, request := range searchRequests {
-		currFileMatchLines += int64(len(ResultListMap[request]))
-		requestStructMap[request].resultStrings = ResultListMap[request]
+		sorterResultFileMap[request].Close()
+		currFileMatchLines += sorterRequestStatMapCurrFile[request]
+		sorterRequestStatMap[request] += sorterRequestStatMapCurrFile[request]
 	}
 
-	ResultListMap = nil   // чистим
-	SorterWriteResult()   // Пишем результат в файл
 	isResultWrited = true // сообщаем о том, что файл записан
 }
