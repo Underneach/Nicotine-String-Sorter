@@ -43,7 +43,7 @@ func PrintLogoStart(appVersion string) {
 	fmt.Print(" zelenka.guru/rx580    # НикотиновыйКодер\n\n")
 	PrintInfo()
 	fmt.Print(cpuid.CPU.BrandName, " @ ", cpuid.CPU.PhysicalCores, "/", cpuid.CPU.LogicalCores, " потоков | ")
-	fmt.Print(math.Round(float64(memory.FreeMemory()/1073741824)), "/", math.Round(float64(memory.TotalMemory()/1073741824)), " Гб доступной памяти\n\n")
+	fmt.Print(math.Round(float64(memory.FreeMemory()/1073741824)), "/", math.Ceil(float64(memory.TotalMemory()/1073741824)), " Гб доступной памяти\n\n")
 	isLogoPrinted = true
 }
 
@@ -79,7 +79,7 @@ func PrintLogoFast(appVersion string) {
 func PrintInputData(appVersion string) string {
 	ClearTerm()
 	PrintLogoFast(appVersion)
-	
+
 	PrintInfo()
 	fmt.Print("Всего файлов : ")
 	ColorBlue.Print(len(filePathList))

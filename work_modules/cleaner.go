@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/zeebo/xxh3"
 	"golang.org/x/text/transform"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +26,6 @@ func RunCleaner() {
 
 func Cleaner(path string) {
 	currPath = path
-	cleanerStringChannelMap[currPath] = make(chan string)
 	cleanerResultChannelMap[currPath] = make(chan string)
 	cleanerStringHashMap = make(map[uint64]bool)
 	TMPlinesLen = 0
@@ -57,27 +55,29 @@ func Cleaner(path string) {
 		return
 	}
 
-	if i := GetAviableStringsCount(); i > currentFileLines {
-		cleanerPool.Tune(int(math.Round(float64(currentFileLines) / 3)))
-	} else {
-		cleanerPool.Tune(int(math.Round(float64(i) / 3)))
-	}
-
 	scanner := bufio.NewScanner(transform.NewReader(cleanerReadFile, fileDecoder))
 	isFileInProcessing = true
+	pBar = CreatePBar()
 
 	go PBarUpdater()
-	go CleanerProcessInputLines()
 	go CleanerWriteLine()
 
 	for ; scanner.Scan(); TMPlinesLen++ {
-		workWG.Add(1)
-		cleanerStringChannelMap[currPath] <- scanner.Text()
+		line := scanner.Text()
+		if validPattern.MatchString(line) && !unknownPattern.MatchString(line) {
+			hash := xxh3.HashString(line)
+			if _, ok := cleanerStringHashMap[hash]; !ok {
+				cleanerStringHashMap[hash] = true
+				cleanerResultChannelMap[currPath] <- line
+			} else {
+				currFileDubles++
+			}
+		} else {
+			currFileInvalidLen++
+		}
 	}
 
-	workWG.Wait()                               // Ждем горутины
 	isFileInProcessing = false                  // Останавливаем пбар
-	close(cleanerStringChannelMap[currPath])    // Закрываем каналы
 	close(cleanerResultChannelMap[currPath])    //
 	checkedLines += int64(TMPlinesLen)          // Прибавляем строки
 	cleanerDublesLen += currFileDubles          //
@@ -87,41 +87,12 @@ func Cleaner(path string) {
 	_ = pBar.Exit()                             // Закрываем бар
 	cleanerReadFile.Close()                     // Закрываем файл
 	cleanerWriteFile.Close()                    // Закрываем файл
-	cleanerStringChannelMap[currPath] = nil     // Чистим канал
 	cleanerResultChannelMap[currPath] = nil     // 
 	cleanerStringHashMap = nil                  //
 	fmt.Print("\n")                             //
 	PrintClearInfo()                            //
 	PrintFileSorted(path)                       // Пишем файл отсортрован
 	checkedFiles++                              // Прибавляем пройденные файлы
-}
-
-func CleanerProcessInputLines() {
-	for {
-		if data, ok := <-cleanerStringChannelMap[currPath]; !ok {
-			break
-		} else {
-			_ = cleanerPool.Invoke(data)
-			continue
-		}
-	}
-}
-
-func CleanerProcessString(line string) {
-	defer workWG.Done()
-	if validPattern.MatchString(line) && !uncknownPattern.MatchString(line) {
-		hash := xxh3.HashString(line)
-		CHMMutex.Lock()
-		if _, ok := cleanerStringHashMap[hash]; !ok {
-			cleanerStringHashMap[hash] = true
-			cleanerResultChannelMap[currPath] <- line
-		} else {
-			currFileDubles++
-		}
-		CHMMutex.Unlock()
-	} else {
-		currFileInvalidLen++
-	}
 }
 
 func CleanerWriteLine() {

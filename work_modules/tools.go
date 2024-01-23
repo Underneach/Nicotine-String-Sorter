@@ -45,7 +45,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 	select {
 	case <-time.After(5 * time.Second):
 		PrintErr()
-		fmt.Print("Таймаут определения кодировки: Используется : ")
+		fmt.Print("Таймаут определения кодировки : Используется ")
 		ColorBlue.Print(" UTF-8/n")
 		return unicode.UTF8.NewDecoder()
 	case result := <-result:
@@ -63,7 +63,7 @@ func DoGetEncodingDecoder(path string) *encoding.Decoder {
 	file, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		PrintErr()
-		fmt.Printf("Ошибка определения кодировки: %s : Используется : ", err)
+		fmt.Printf("Ошибка определения кодировки : %s : Используется : ", err)
 		ColorBlue.Print(" UTF-8/n")
 		return unicode.UTF8.NewDecoder()
 	}

@@ -54,24 +54,20 @@ var (
 	sorterResultWriterMap        = make(map[string]*bufio.Writer)                           // Мапа врайтера для каждого запроса
 	sorterResultFileMap          = make(map[string]*os.File)                                // Мапа файла для каждого запроса
 	sorterStringHashMap          = make(map[uint64]bool)                                    // Мапа хешей строк
-	sorterStringChannelMap       = make(map[string]chan string)                             // Мапа строк
 
 	// Клинер
-	cleanerPool             *ants.MultiPoolWithFunc                                     // Пул клинера
-	validPattern, _         = regexp.Compile(`[\s\S]{10,256}$`)                         // Паттерн валида
-	uncknownPattern, _      = regexp.Compile(`UNKNOWN`)                                 // Содержание UNKNOWN
-	cleanerOutputFilesMap   = make(map[string]string)                                   // Мапа выходных файлов
-	cleanerStringChannelMap = make(map[string]chan string)                              // Мапа строк
-	cleanerResultChannelMap = make(map[string]chan string)                              // Мапа валид строк
-	cleanerWriteFile        *os.File                                                    // Файл записи
-	CHMMutex                sync.Mutex                                                  // Мютекс карты хешей
-	cleanerInvalidLen       int64                               = 0                     // Кол во невалид строк
-	currFileInvalidLen      int64                               = 0                     // Кол во повторяющихся строк
-	cleanerDublesLen        int64                               = 0                     // Колво повторяющихся строк
-	currFileDubles          int64                               = 0                     // 
-	cleanerWritedString     int64                               = 0                     // Кол во записанных строк
-	currFileWritedString    int64                               = 0                     //
-	cleanerStringHashMap                                        = make(map[uint64]bool) // Мапа хешей строк
+	validPattern, _         = regexp.Compile(`^[a-zA-Z0-9\.\,\!\?\:\;\-\'\"\@\/\#\$\%\^\&\*\(\)\_\+\=\~\x60]{10,256}$`)                         // Паттерн валида
+	unknownPattern, _       = regexp.Compile(`UNKNOWN`)                                                                                         // Содержание UNKNOWN
+	cleanerOutputFilesMap   = make(map[string]string)                                                                                           // Мапа выходных файлов
+	cleanerResultChannelMap = make(map[string]chan string)                                                                                      // Мапа валид строк
+	cleanerWriteFile        *os.File                                                                                                            // Файл записи
+	cleanerInvalidLen       int64                                                                                       = 0                     // Кол во невалид строк
+	currFileInvalidLen      int64                                                                                       = 0                     // Кол во повторяющихся строк
+	cleanerDublesLen        int64                                                                                       = 0                     // Колво повторяющихся строк
+	currFileDubles          int64                                                                                       = 0                     // 
+	cleanerWritedString     int64                                                                                       = 0                     // Кол во записанных строк
+	currFileWritedString    int64                                                                                       = 0                     //
+	cleanerStringHashMap                                                                                                = make(map[uint64]bool) // Мапа хешей строк
 
 	// Арги
 	filePathList   []string
@@ -112,24 +108,6 @@ func InitSorter() {
 	if poolerr != nil {
 		PrintErr()
 		ColorRed.Print("Невозможно запустить сортер : Ошибка пула сортера : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
-		_, _ = fmt.Scanln()
-		os.Exit(1)
-	}
-}
-
-func InitCleaner() {
-
-	cleanerPool, poolerr = ants.NewMultiPoolWithFunc(
-		runtime.NumCPU(),
-		100000,
-		func(line interface{}) { CleanerProcessString(line.(string)) },
-		ants.RoundRobin,
-		ants.WithPreAlloc(true),
-	)
-
-	if poolerr != nil {
-		PrintErr()
-		ColorRed.Print("Невозможно запустить клинер : Ошибка пула клинера : \n\n\n		", poolerr, "\n\n\n   Нажмите Enter для выхода")
 		_, _ = fmt.Scanln()
 		os.Exit(1)
 	}

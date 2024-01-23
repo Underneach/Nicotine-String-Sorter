@@ -99,9 +99,6 @@ func PrintSortInfo() {
 		ColorBlue.Print(currFileMatchLines)
 		fmt.Print(" подходящих строк по всем запросам\n")
 	}
-	PrintInfo()
-	ColorYellow.Print(currFileDubles)
-	fmt.Print(" Повторов по всем запросам\n")
 }
 
 func PrintClearInfo() {
@@ -136,7 +133,6 @@ func CreatePBar() *progressbar.ProgressBar {
 }
 
 func PBarUpdater() {
-	pBar = CreatePBar()
 	for isFileInProcessing {
 		if TMPlinesLen > int(currentFileLines) {
 			_ = pBar.Set64(currentFileLines)
@@ -176,14 +172,14 @@ func PrintResultWriteErr(request string, err error) {
 
 func PrintEncodingErr(err error) {
 	PrintErr()
-	fmt.Printf("Ошибка определения кодировки: %s : Используется ", err)
+	fmt.Printf("Ошибка определения кодировки : %s : Используется ", err)
 	ColorBlue.Print("UTF-8\n")
 }
 
 func PrintEndodingLinesEnd() {
 	PrintWarn()
-	fmt.Print("Недостаточно строк для определения кодировки : Используется : ")
-	ColorBlue.Print("utf-8\n")
+	fmt.Print("Недостаточно строк для определения кодировки : Используется ")
+	ColorBlue.Print("UTF-8\n")
 }
 
 func PrintSorterResult() {

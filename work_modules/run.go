@@ -17,7 +17,6 @@ func Run(_workMode string, _filePathList []string, _searchRequests []string, _sa
 		PrintSorterResult()
 
 	case "cleaner":
-		InitCleaner()
 		RunCleaner()
 		for _, filePath := range filePathList {
 			Cleaner(filePath)

@@ -55,7 +55,6 @@ func RunSorter() {
 func Sorter(path string) {
 
 	currPath = path
-	sorterStringChannelMap[currPath] = make(chan string)
 	sorterStringHashMap = make(map[uint64]bool)
 	isFileInProcessing = false
 	isResultWrited = false
@@ -88,19 +87,18 @@ func Sorter(path string) {
 	}
 
 	isFileInProcessing = true
+	pBar = CreatePBar()
 	go PBarUpdater()
 	go SorterWriteResult()
-	go SorterProcessInputLines()
 
 	scanner := bufio.NewScanner(transform.NewReader(file, fileDecoder))
 
 	for ; scanner.Scan(); TMPlinesLen++ {
 		workWG.Add(1)
-		sorterStringChannelMap[currPath] <- scanner.Text()
+		_ = sorterPool.Invoke(scanner.Text())
 	}
 
 	workWG.Wait()
-	close(sorterStringChannelMap[currPath])
 
 	checkedLines += int64(TMPlinesLen) // Прибавляем строки
 	_ = pBar.Finish()                  // Завершаем бар
@@ -120,17 +118,6 @@ func Sorter(path string) {
 	checkedFiles++                   // Прибавляем пройденные файлы
 	matchLines += currFileMatchLines // Суммируем найденые строки
 	sorterDubles += currFileDubles
-}
-
-func SorterProcessInputLines() {
-	for {
-		if data, ok := <-sorterStringChannelMap[currPath]; !ok {
-			break
-		} else {
-			_ = sorterPool.Invoke(data)
-			continue
-		}
-	}
 }
 
 func SorterProcessLine(line string) {
@@ -159,7 +146,7 @@ func SorterWriteResult() {
 			hash := xxh3.HashString(data[1])
 			if _, ok := sorterStringHashMap[hash]; !ok {
 				sorterStringHashMap[hash] = true
-				sorterResultWriterMap[data[0]].WriteString(data[1] + "\n")
+				_, _ = sorterResultWriterMap[data[0]].WriteString(data[1] + "\n")
 				sorterRequestStatMapCurrFile[data[0]]++
 			} else {
 				currFileDubles++
