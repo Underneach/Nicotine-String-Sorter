@@ -2,8 +2,8 @@ package work_modules
 
 import "time"
 
-func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string) (startTime time.Time) {
-	InitVar(_workMode, _filePathList, _searchRequests, _saveType)
+func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string) (startTime time.Time) {
+	InitVar(_workMode, _filePathList, _searchRequests, _saveType, _cleanType)
 
 	startTime = time.Now()
 

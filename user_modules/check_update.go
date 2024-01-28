@@ -47,11 +47,13 @@ func CheckUpdate(appVersion string) {
 
 	if apiResponse.TagName != appVersion {
 		WaitLogo()
-		PrintInfo()
+		PrintSuccess()
 		fmt.Print("Доступна новая версия : ")
-		ColorBlue.Print(apiResponse.TagName)
-		fmt.Print(" : ")
-		ColorBlue.Print(apiResponse.ReleaseUrl, "\n\n")
+		ColorBlue.Print(apiResponse.TagName, "\n")
+		PrintSuccess()
+		ColorBlue.Print(apiResponse.ReleaseUrl, "\n")
+		PrintSuccess()
+		fmt.Print("Скачайте новый .exe и замените текущий\n\n")
 	} else {
 		WaitLogo()
 		PrintSuccess()

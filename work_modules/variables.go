@@ -39,7 +39,8 @@ var (
 	currPath                 string                                                     // Текущий файл
 	poolerr                  error                                                      // Ошибка создания пула
 	workWG                   sync.WaitGroup                                             // Синхронизатор очка
-	TMPlinesLen                                       = 0                               // Чанк строк в файле
+	TMPlinesLen              = 0                                                        // Чанк строк в файле
+	currPathCut              string                                                     // Текущий файл без полного пути
 
 	// Сортер
 	currFileMatchLines           int64                             = 0                      //
@@ -74,6 +75,7 @@ var (
 	searchRequests []string
 	saveType       string
 	workMode       string
+	cleanType      string
 )
 
 type Work struct {
@@ -81,11 +83,12 @@ type Work struct {
 	resultFile     string         // Название файла с найдеными строками
 }
 
-func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string) {
+func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string) {
 	workMode = _workMode
 	filePathList = _filePathList
 	searchRequests = _searchRequests
 	saveType = _saveType
+	cleanType = _cleanType
 }
 
 func InitSorter() {

@@ -197,9 +197,9 @@ func GetSaveTypeInput() (saveType string) {
 	PrintInfo()
 	fmt.Print("Поддерживаемые типы сохранения:\n\n")
 	ColorBlue.Print("       1")
-	fmt.Print(" - log:pass\n")
+	fmt.Print(" - Log:Pass\n")
 	ColorBlue.Print("       2")
-	fmt.Print(" - url:log:pass\n\n")
+	fmt.Print(" - Url:Log:Pass\n\n")
 
 Loop:
 	for true {
@@ -218,4 +218,32 @@ Loop:
 		}
 	}
 	return saveType
+}
+
+func GetCleanTypeInput() (cleanType string) {
+
+	PrintInfo()
+	fmt.Print("Поддерживаемые режимы клинера:\n\n")
+	ColorBlue.Print("       1")
+	fmt.Print(" - Чистка и сохранение каждой базы отдельно\n")
+	ColorBlue.Print("       2")
+	fmt.Print(" - Чистка всех баз вместе и сохранение в один файл\n\n")
+
+Loop:
+	for true {
+		PrintInput()
+		fmt.Print("Выберите режим чистки: ")
+		rawcleanType, _ := userInputReader.ReadString('\n')
+		rawcleanType = strings.TrimSpace(rawcleanType)
+
+		switch rawcleanType {
+		case "1", "2":
+			cleanType = rawcleanType
+			fmt.Print("\n")
+			break Loop
+		default:
+			continue Loop
+		}
+	}
+	return cleanType
 }

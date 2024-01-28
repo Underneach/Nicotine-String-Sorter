@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/transform"
 	"math"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 )
@@ -54,29 +55,31 @@ func RunSorter() {
 
 func Sorter(path string) {
 
+	_, currPathCut = filepath.Split(path)
 	currPath = path
 	sorterStringHashMap = make(map[uint64]bool)
 	isFileInProcessing = false
 	isResultWrited = false
 	TMPlinesLen = 0
 	currFileDubles = 0
+	currFileMatchLines = 0
 	for _, req := range searchRequests {
 		sorterRequestStatMapCurrFile[req] = 0
 	}
 
-	if err := GetCurrentFileSize(path); err != nil {
-		PrintFileReadErr(path, err)
+	if err := GetCurrentFileSize(currPath); err != nil {
+		PrintFileReadErr(currPath, err)
 		return
 	}
 
-	PrintFileInfo(path)
+	PrintFileInfo(currPathCut)
 	PrintLinesChunk()
-	fileDecoder = GetEncodingDecoder(path)
+	fileDecoder = GetEncodingDecoder(currPath)
 
-	file, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(currPath, os.O_RDONLY, os.ModePerm)
 
 	if err != nil {
-		PrintFileReadErr(path, err)
+		PrintFileReadErr(currPath, err)
 		return
 	}
 
@@ -114,7 +117,7 @@ func Sorter(path string) {
 
 	sorterWriteChannelMap[currPath] = nil // Чистим канал
 	PrintSortInfo()
-	PrintFileSorted(path)            // Пишем файл отсортрован
+	PrintFileDone(currPathCut)       // Пишем файл отсортрован
 	checkedFiles++                   // Прибавляем пройденные файлы
 	matchLines += currFileMatchLines // Суммируем найденые строки
 	sorterDubles += currFileDubles
@@ -162,6 +165,5 @@ func SorterWriteResult() {
 		currFileMatchLines += sorterRequestStatMapCurrFile[request]
 		sorterRequestStatMap[request] += sorterRequestStatMapCurrFile[request]
 	}
-
 	isResultWrited = true // сообщаем о том, что файл записан
 }

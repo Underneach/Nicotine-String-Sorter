@@ -34,7 +34,7 @@ func PrintInfo() {
 	fmt.Print("] ")
 }
 
-// PrintLinesChunk PrintCheckedFiles PrintFileInfo PrintFileSorted Инфа о работе сортера
+// PrintLinesChunk PrintCheckedFiles PrintFileInfo PrintFileDone Инфа о работе сортера
 
 func PrintLinesChunk() {
 	PrintInfo()
@@ -72,8 +72,8 @@ func PrintFileInfo(path string) {
 	fmt.Print(" Строк\n")
 }
 
-func PrintFileSorted(path string) {
-	PrintInfo()
+func PrintFileDone(path string) {
+	PrintSuccess()
 	PrintCheckedFiles()
 	ColorBlue.Print(path)
 	fmt.Print(" : Файл обработан\n\n")
@@ -84,14 +84,12 @@ func PrintSortInfo() {
 	switch {
 	case reqLen <= 10:
 		for _, request := range searchRequests {
-			strLen := sorterRequestStatMapCurrFile[request]
-			if strLen > 0 {
-				PrintSuccess()
-				ColorBlue.Print(request)
-				fmt.Print(" : ")
-				ColorBlue.Print(strLen)
-				fmt.Print(" строк\n")
-			}
+			PrintSuccess()
+			ColorBlue.Print(request)
+			fmt.Print(" : ")
+			ColorBlue.Print(sorterRequestStatMapCurrFile[request])
+			fmt.Print(" строк\n")
+
 		}
 	case reqLen > 10:
 		PrintSuccess()
@@ -129,6 +127,15 @@ func CreatePBar() *progressbar.ProgressBar {
 		progressbar.OptionSetWidth(50),
 		progressbar.OptionSetItsString("Str"),
 		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetDescription("[*]"),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[blue]█[reset]",
+			SaucerHead:    "[green]░[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}),
 	)
 }
 
@@ -230,8 +237,16 @@ func PrintCleanerResult() {
 	PrintSuccess()
 	fmt.Print("Записано уникальных строк : ")
 	ColorBlue.Print(cleanerWritedString, "\n\n")
-	for _, path := range filePathList {
+
+	switch cleanType {
+	case "1":
+		for _, path := range filePathList {
+			PrintSuccess()
+			fmt.Print(cleanerOutputFilesMap[path] + "\n")
+		}
+	case "2":
 		PrintSuccess()
-		fmt.Print(cleanerOutputFilesMap[path] + "\n")
+		fmt.Print(cleanerOutputFilesMap[filePathList[0]] + "\n")
 	}
+
 }

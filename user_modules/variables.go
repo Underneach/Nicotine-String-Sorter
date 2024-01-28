@@ -23,8 +23,10 @@ var (
 	userOs          = runtime.GOOS              // ОС юзера
 	updateWG        sync.WaitGroup              // ВГ обновы
 	isLogoPrinted   = false                     // Напечатано ли лого
-	workMode        string
-	filePathList    []string
-	searchRequests  []string
-	saveType        string
+
+	workMode       string
+	filePathList   []string
+	searchRequests []string
+	saveType       string
+	cleanType      string
 )

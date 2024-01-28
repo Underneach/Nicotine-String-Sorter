@@ -15,9 +15,19 @@ func RunCleaner() {
 	PrintInfo()
 	fmt.Print("Запуск Клинера...")
 
-	for _, path := range filePathList {
-		cleanerOutputFilesMap[path] = GetRunDir() + strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)) + "_cleaned.txt"
+	switch cleanType {
+	case "1":
+		for _, path := range filePathList {
+			cleanerOutputFilesMap[path] = GetRunDir() + strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)) + "_cleaned.txt"
+		}
+	case "2":
+		for _, path := range filePathList {
+			cleanerOutputFilesMap[path] = GetRunDir() + "cleaned.txt"
+		}
 	}
+
+	cleanerStringHashMap = make(map[uint64]bool)
+
 	fmt.Print("\r")
 	PrintSuccess()
 	fmt.Print("Клинер запущен   \n\n")
@@ -26,32 +36,35 @@ func RunCleaner() {
 
 func Cleaner(path string) {
 	currPath = path
+	_, currPathCut = filepath.Split(currPath)
 	cleanerResultChannelMap[currPath] = make(chan string)
-	cleanerStringHashMap = make(map[uint64]bool)
 	TMPlinesLen = 0
 	currFileDubles = 0
 	currFileWritedString = 0
 	currFileInvalidLen = 0
 
-	if err := GetCurrentFileSize(path); err != nil {
-		PrintFileReadErr(path, err)
+	if cleanType == "1" {
+		cleanerStringHashMap = make(map[uint64]bool)
+	}
+
+	if err := GetCurrentFileSize(currPath); err != nil {
+		PrintFileReadErr(currPath, err)
 		return
 	}
 
-	PrintFileInfo(path)
+	PrintFileInfo(currPathCut)
 	PrintLinesChunk()
-	fileDecoder = GetEncodingDecoder(path)
+	fileDecoder = GetEncodingDecoder(currPath)
 
-	cleanerReadFile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-
+	cleanerReadFile, err := os.OpenFile(currPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		PrintFileReadErr(path, err)
+		PrintFileReadErr(currPath, err)
 		return
 	}
 
 	cleanerWriteFile, err = os.OpenFile(cleanerOutputFilesMap[currPath], os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		PrintFileReadErr(path, err)
+		PrintFileReadErr(currPath, err)
 		return
 	}
 
@@ -87,12 +100,13 @@ func Cleaner(path string) {
 	_ = pBar.Exit()                             // Закрываем бар
 	cleanerReadFile.Close()                     // Закрываем файл
 	cleanerWriteFile.Close()                    // Закрываем файл
-	cleanerResultChannelMap[currPath] = nil     // 
-	cleanerStringHashMap = nil                  //
-	fmt.Print("\n")                             //
-	PrintClearInfo()                            //
-	PrintFileSorted(path)                       // Пишем файл отсортрован
-	checkedFiles++                              // Прибавляем пройденные файлы
+	cleanerResultChannelMap[currPath] = nil     //
+	if cleanType == "1" {
+		cleanerStringHashMap = nil // Чистим карту если базы сортятся отдельно
+	}
+	PrintClearInfo()           //
+	PrintFileDone(currPathCut) // Пишем файл отсортрован
+	checkedFiles++             // Прибавляем пройденные файлы
 }
 
 func CleanerWriteLine() {
