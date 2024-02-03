@@ -2,15 +2,24 @@
 Сортер ваших Url:Log:Pass строк на Go
 
 
-https://raw.githubusercontent.com/Underneach/Nicotine-String-Sorter/String-Sorter-regexp/image_1.png
-https://raw.githubusercontent.com/Underneach/Nicotine-String-Sorter/String-Sorter-regexp/image_2.png
+![image](https://raw.githubusercontent.com/Underneach/Nicotine-String-Sorter/String-Sorter-regexp/image_1.png)
+![image](https://raw.githubusercontent.com/Underneach/Nicotine-String-Sorter/String-Sorter-regexp/image_2.png)
 
 
-## Что сортер умеет
-+  Получение строк из файла или файлов в папке
-+  Сохранение в виде Log:Pass или Url:Log:Pass
-+  Сортировка по запросу в виде сайта (google.com) или ключевого слова в ссылке (google)
-+  Многопоточная сортировка, запись в файлы и удаление дубликатов
+## Что умеет сортер
+
+    Получение строк из файла или файлов в папке
+    Сохранение в виде Log:Pass или Url:Log:Pass
+    Сортировка по запросу в виде сайта (google.com) или ключевого слова в ссылке (google)
+    Многопоточная сортировка и одновременная запись в файлы с пропуском повторов строк - чтение базы любого размера
+
+## Что умеет клинер
+
+    Чистка базы любого размера - строки обрабатываются сразу при чтении, без загрузки списком в оперативную память
+    Чистка нескольких баз по отдельности или всех баз в один файл
+    Удаление невалид строк (A-z / 0-9 / Специмволы | 10-256 символов | UNKNOWN
+    Удаление дублей реализовано через xxh3 хеш
+
 
 
 ## Стек
