@@ -3,11 +3,12 @@ package main
 import (
 	"String-Sorter/user_modules"
 	"String-Sorter/work_modules"
-	"time"
 )
 
-var appVersion = "2.4.0"
+var appVersion = "2.5.0"
 
 func main() {
-	user_modules.PrintTimeDuration(time.Since(work_modules.Run(user_modules.GetUserInputData(appVersion))))
+
+	user_modules.PrintTimeDuration(work_modules.Run(user_modules.GetUserInputData(appVersion)))
+
 }

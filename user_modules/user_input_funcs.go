@@ -37,16 +37,18 @@ LoopWork:
 
 func GetFilesInput() (result []string) {
 
+Loop:
 	for {
 		PrintInput()
 		fmt.Print("Введите путь к файлу или папке для обработки: ")
 
 		rawPath, _ := userInputReader.ReadString('\n')
-		rawPath = filepath.Clean(strings.TrimSpace(rawPath))
-
+		rawPath = strings.TrimSpace(rawPath)
 		if rawPath == "" {
-			continue
+			continue Loop
 		}
+
+		rawPath = filepath.Clean(rawPath)
 
 		if fileInfo, fierr := os.Stat(rawPath); fierr == nil {
 
@@ -72,20 +74,27 @@ func GetFilesInput() (result []string) {
 					}
 					return nil
 				})
-				fmt.Print("\n")
-				break
+
+				if len(result) >= 1 {
+					fmt.Print("\n")
+					break Loop
+				} else {
+					PrintErr()
+					fmt.Print("Нет файлов для обработки\n")
+					continue Loop
+				}
 
 			} else {
 				PrintSuccess()
 				fmt.Print("Файл со строками найден\n\n")
 				result = append(result, rawPath)
-				break
+				break Loop
 			}
 
 		} else {
 			PrintErr()
 			fmt.Printf("Путь '%s' не существует\n", rawPath)
-			continue
+			continue Loop
 		}
 	}
 
@@ -103,6 +112,7 @@ func GetRequestsInput() (requests []string) {
 	ColorBlue.Print("       2")
 	fmt.Print(" - Ввод из файла\n\n")
 
+LoopA:
 	for {
 
 		PrintInput()
@@ -112,17 +122,22 @@ func GetRequestsInput() (requests []string) {
 
 		switch strings.TrimSpace(inputType) {
 		case "1":
+		LoopB:
 			for true {
 				PrintInput()
 				fmt.Print("Введите запросы через пробел: ")
 				rawRequests, _ := userInputReader.ReadString('\n')
+				rawRequests = strings.TrimSpace(rawRequests)
+				if rawRequests == "" {
+					continue LoopB
+				}
 				for _, request := range strings.Split(rawRequests, " ") {
 					request = strings.TrimSpace(strings.ToLower(request))
 					_, err := regexp.Compile(".*" + request + ".*:(.+:.+)")
 					if err != nil {
 						PrintErr()
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
-						continue
+						continue LoopB
 					}
 					requests = append(requests, request)
 				}
@@ -130,12 +145,13 @@ func GetRequestsInput() (requests []string) {
 				if len(requests) == 0 {
 					PrintErr()
 					fmt.Print("Нет запросов для поиска\n")
-					continue
+					continue LoopB
 				}
 				fmt.Print("\n")
-				break
+				break LoopA
 			}
 		case "2":
+		LoopC:
 			for true {
 				PrintInput()
 				fmt.Print("Введите путь к файлу: ")
@@ -145,14 +161,14 @@ func GetRequestsInput() (requests []string) {
 				if sterr != nil {
 					PrintErr()
 					fmt.Print("Файл не существует\n")
-					continue
+					continue LoopC
 				}
 				file, operr := os.Open(rawRequests)
 				if operr != nil {
 					PrintErr()
 					fmt.Printf("Ошибка чтения файла с запросами : %s\n", operr)
 					fmt.Println(operr)
-					continue
+					continue LoopC
 				}
 
 				defer file.Close()
@@ -166,9 +182,10 @@ func GetRequestsInput() (requests []string) {
 					if err != nil {
 						PrintErr()
 						fmt.Printf("%s : Ошибка создания регулярного выражения : %s\n", request, err)
-						continue
+						continue LoopC
 					}
 					requests = append(requests, request)
+
 				}
 
 				PrintSuccess()
@@ -179,15 +196,14 @@ func GetRequestsInput() (requests []string) {
 				if len(requests) == 0 {
 					PrintErr()
 					fmt.Print("Нет запросов для поиска\n")
-					continue
+					continue LoopA
 				}
 				fmt.Print("\n")
-				break
+				break LoopA
 			}
 		default:
-			continue
+			continue LoopA
 		}
-		break
 	}
 	return Unique(requests)
 }
@@ -246,4 +262,52 @@ Loop:
 		}
 	}
 	return cleanType
+}
+
+func GetDelimetrInput() (delimetr string) {
+
+LoopDel:
+	for true {
+		PrintInput()
+		fmt.Print("Введите разделитель строк: ")
+		var rawDelTrim string
+
+		rawDel, _ := userInputReader.ReadString('\n')
+
+		switch rawDel {
+		case "":
+			continue LoopDel
+		case " ":
+			rawDelTrim = rawDel
+		default:
+			rawDelTrim = strings.TrimSpace(rawDel)
+		}
+
+		PrintInfo()
+		fmt.Print("Разделитель строк - '")
+		ColorBlue.Print(rawDelTrim)
+		fmt.Print("'\n\n")
+		ColorBlue.Print("       1")
+		fmt.Print(" - Продолжить\n")
+		ColorBlue.Print("       2")
+		fmt.Print(" - Ввести заново\n\n")
+	LoopAction:
+		for true {
+			PrintInput()
+			fmt.Print("Выберите действие: ")
+			action, _ := userInputReader.ReadString('\n')
+			action = strings.TrimSpace(action)
+			switch action {
+			case "1":
+				delimetr = rawDelTrim
+				break LoopDel
+			case "2":
+				continue LoopDel
+			default:
+				continue LoopAction
+			}
+		}
+	}
+
+	return
 }

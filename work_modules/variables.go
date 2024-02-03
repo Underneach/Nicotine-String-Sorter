@@ -65,7 +65,7 @@ var (
 	cleanerInvalidLen       int64                                                                                       = 0                     // Кол во невалид строк
 	currFileInvalidLen      int64                                                                                       = 0                     // Кол во повторяющихся строк
 	cleanerDublesLen        int64                                                                                       = 0                     // Колво повторяющихся строк
-	currFileDubles          int64                                                                                       = 0                     // 
+	currFileDubles          int64                                                                                       = 0                     //
 	cleanerWritedString     int64                                                                                       = 0                     // Кол во записанных строк
 	currFileWritedString    int64                                                                                       = 0                     //
 	cleanerStringHashMap                                                                                                = make(map[uint64]bool) // Мапа хешей строк
@@ -76,6 +76,7 @@ var (
 	saveType       string
 	workMode       string
 	cleanType      string
+	delimetr       string
 )
 
 type Work struct {
@@ -83,12 +84,13 @@ type Work struct {
 	resultFile     string         // Название файла с найдеными строками
 }
 
-func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string) {
+func InitVar(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string, _delimetr string) {
 	workMode = _workMode
 	filePathList = _filePathList
 	searchRequests = _searchRequests
 	saveType = _saveType
 	cleanType = _cleanType
+	delimetr = _delimetr
 }
 
 func InitSorter() {

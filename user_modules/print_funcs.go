@@ -76,7 +76,7 @@ func PrintLogoFast(appVersion string) {
 	fmt.Print(" zelenka.guru/rx580    # НикотиновыйКодер\n\n")
 }
 
-func PrintInputData(appVersion string) string {
+func PrintInputInfo(appVersion string) {
 	ClearTerm()
 	PrintLogoFast(appVersion)
 
@@ -88,60 +88,97 @@ func PrintInputData(appVersion string) string {
 	fmt.Print(" Мб ")
 	fmt.Print(": Строк : ")
 	ColorBlue.Print("~", filesSize/80, "\n")
+}
+func PrintSorterData() {
+	PrintInfo()
+	fmt.Printf("Всего запросов : ")
 
-	switch workMode {
-	case "sorter":
-		PrintInfo()
-		fmt.Printf("Всего запросов : ")
+	reqLen := len(searchRequests)
 
-		reqLen := len(searchRequests)
-
-		switch {
-		case reqLen <= 3:
-			ColorBlue.Print(reqLen)
-			fmt.Print(" : ")
-			for i, req := range searchRequests {
-				ColorBlue.Print(req)
-				if i != reqLen-1 {
-					fmt.Print(", ")
-				}
+	switch {
+	case reqLen <= 3:
+		ColorBlue.Print(reqLen)
+		fmt.Print(" : ")
+		for i, req := range searchRequests {
+			ColorBlue.Print(req)
+			if i != reqLen-1 {
+				fmt.Print(", ")
 			}
-			fmt.Print("\n")
-		case reqLen > 3 && reqLen <= 10:
-			ColorBlue.Print(reqLen, "\n")
-			for _, request := range searchRequests {
-				fmt.Println("    ", request)
-			}
-			fmt.Print("\n")
-		case reqLen > 10:
-			ColorBlue.Print(reqLen, "\n\n")
-
 		}
+		fmt.Print("\n")
+	case reqLen > 3 && reqLen <= 10:
+		ColorBlue.Print(reqLen, "\n")
+		for _, request := range searchRequests {
+			fmt.Println("    ", request)
+		}
+		fmt.Print("\n")
+	case reqLen > 10:
+		ColorBlue.Print(reqLen, "\n\n")
 
-	case "cleaner":
 	}
+	PrintInfo()
+	fmt.Print("Формат сохранениея : ")
+	switch saveType {
+	case "1":
+		ColorBlue.Print("Log:Pass\n")
+	case "2":
+		ColorBlue.Print("Url:Log:Pass\n")
+	}
+}
 
-	PrintInput()
-	fmt.Print("Выберите действие:\n\n")
-
-	ColorBlue.Print("	1")
-	fmt.Print(" - Запустить\n")
-	ColorBlue.Print("	2")
-	fmt.Print(" - Ввести данные заново\n\n")
+func PrintInputData(appVersion string) (uSelect string) {
+LoopData:
 	for true {
-		fmt.Print("> ")
-		userSelect, _ := userInputReader.ReadString('\n')
-		userSelect = strings.TrimSpace(userSelect)
-		if userSelect == "1" {
-			returnData = "continue"
-			break
-		} else if userSelect == "2" {
-			returnData = "restart"
-			break
+		PrintInputInfo(appVersion)
+
+		switch workMode {
+		case "sorter":
+			PrintSorterData()
+		case "cleaner":
 		}
+
+		PrintInput()
+		fmt.Print("Выберите действие:\n\n")
+
+		ColorBlue.Print("	1")
+		fmt.Print(" - Запустить\n")
+		if workMode == "sorter" {
+			ColorBlue.Print("	2")
+			fmt.Print(" - Выбрать разделитель строк - '")
+			ColorBlue.Print(":")
+			fmt.Print("' по умолчанию\n")
+		}
+		ColorBlue.Print("	3")
+		fmt.Print(" - Ввести данные заново\n\n")
+
+	LoopMode:
+		for true {
+			fmt.Print("> ")
+			userSelect, _ := userInputReader.ReadString('\n')
+			userSelect = strings.TrimSpace(userSelect)
+
+			switch userSelect {
+			case "1":
+				uSelect = "continue"
+				break LoopMode
+			case "2":
+				if workMode == "sorter" {
+					delimetr = GetDelimetrInput()
+					continue LoopData
+				} else {
+					continue LoopData
+				}
+			case "3":
+				uSelect = "restart"
+				break LoopMode
+			default:
+				continue LoopMode
+			}
+		}
+		break LoopData
 	}
 	ClearTerm()
-	return returnData
+	return uSelect
 }
 
 func PrintTimeDuration(duration time.Duration) {
@@ -153,7 +190,7 @@ func PrintTimeDuration(duration time.Duration) {
 	PrintInfo()
 	fmt.Print("Нажмите ")
 	ColorBlue.Print("Enter")
-	fmt.Print(" для выхода\n\n\n")
+	fmt.Print(" для выхода")
 	fmt.Scanln()
 	os.Exit(0)
 }

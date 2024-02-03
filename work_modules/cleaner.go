@@ -53,8 +53,7 @@ func Cleaner(path string) {
 	}
 
 	PrintFileInfo(currPathCut)
-	PrintLinesChunk()
-	fileDecoder = GetEncodingDecoder(currPath)
+	fileDecoder = GetFileProcessInfo(currPath)
 
 	cleanerReadFile, err := os.OpenFile(currPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {

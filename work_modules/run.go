@@ -2,10 +2,10 @@ package work_modules
 
 import "time"
 
-func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string) (startTime time.Time) {
-	InitVar(_workMode, _filePathList, _searchRequests, _saveType, _cleanType)
+func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string, _delimetr string) time.Duration {
+	InitVar(_workMode, _filePathList, _searchRequests, _saveType, _cleanType, _delimetr)
 
-	startTime = time.Now()
+	startTime := time.Now()
 
 	switch workMode {
 	case "sorter":
@@ -24,5 +24,5 @@ func Run(_workMode string, _filePathList []string, _searchRequests []string, _sa
 		PrintCleanerResult()
 	}
 
-	return startTime
+	return time.Since(startTime)
 }

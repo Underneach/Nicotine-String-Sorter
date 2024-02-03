@@ -36,17 +36,6 @@ func PrintInfo() {
 
 // PrintLinesChunk PrintCheckedFiles PrintFileInfo PrintFileDone Инфа о работе сортера
 
-func PrintLinesChunk() {
-	PrintInfo()
-	fmt.Print("Чтение файла по ")
-	if GetAviableStringsCount() > currentFileLines {
-		ColorBlue.Print(currentFileLines)
-	} else {
-		ColorBlue.Print(GetAviableStringsCount())
-	}
-	fmt.Print(" строк\n")
-}
-
 func PrintCheckedFiles() {
 	fmt.Print("[")
 	ColorBlue.Print(checkedFiles + 1)
@@ -112,11 +101,20 @@ func PrintClearInfo() {
 	fmt.Print(" Невалидных\n")
 }
 
+func PrintChunk() {
+	PrintInfo()
+	fmt.Print("Чтение по ")
+	if GetAviableStringsCount() > currentFileLines {
+		ColorBlue.Print(currentFileLines)
+	} else {
+		ColorBlue.Print(GetAviableStringsCount())
+	}
+	fmt.Print(" строк : ")
+}
+
 func PrintEncoding(result *chardet.Result) {
-	PrintSuccess()
-	fmt.Print("Определена кодировка : ")
 	ColorBlue.Print(result.Charset)
-	fmt.Printf(" : Вероятность : ")
+	fmt.Print(" - ")
 	ColorBlue.Print(result.Confidence)
 	fmt.Print(" %\n")
 }
@@ -179,14 +177,14 @@ func PrintResultWriteErr(request string, err error) {
 
 func PrintEncodingErr(err error) {
 	PrintErr()
-	fmt.Printf("Ошибка определения кодировки : %s : Используется ", err)
-	ColorBlue.Print("UTF-8\n")
+	fmt.Printf(" Ошибка определения кодировки : %s : Используется ", err)
+	ColorBlue.Print("UTF-8")
 }
 
 func PrintEndodingLinesEnd() {
 	PrintWarn()
-	fmt.Print("Недостаточно строк для определения кодировки : Используется ")
-	ColorBlue.Print("UTF-8\n")
+	fmt.Print(" Недостаточно строк для определения кодировки : Используется ")
+	ColorBlue.Print("UTF-8")
 }
 
 func PrintSorterResult() {

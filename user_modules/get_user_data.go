@@ -1,6 +1,6 @@
 package user_modules
 
-func GetUserInputData(appVersion string) (string, []string, []string, string, string) {
+func GetUserInputData(appVersion string) (string, []string, []string, string, string, string) {
 
 	updateWG.Add(1)
 	go CheckUpdate(appVersion)
@@ -41,5 +41,5 @@ LoopInput:
 
 	PrintLogoFast(appVersion)
 
-	return workMode, filePathList, searchRequests, saveType, cleanType
+	return workMode, filePathList, searchRequests, saveType, cleanType, delimetr
 }

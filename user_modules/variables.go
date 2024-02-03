@@ -29,4 +29,5 @@ var (
 	searchRequests []string
 	saveType       string
 	cleanType      string
+	delimetr       string = ":"
 )

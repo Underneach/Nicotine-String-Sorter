@@ -27,9 +27,9 @@ func RunSorter() {
 
 		switch saveType {
 		case "1":
-			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*:(.+:.+)")
+			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*" + delimetr + " (.+" + delimetr + ".+)")
 		case "2":
-			compiledRegEx, err = regexp.Compile("(.*" + regexp.QuoteMeta(request) + ".*:.+:.+)")
+			compiledRegEx, err = regexp.Compile("(.*" + regexp.QuoteMeta(request) + ".*" + delimetr + ".+" + delimetr + ".+)")
 		}
 
 		if err != nil {
@@ -73,8 +73,7 @@ func Sorter(path string) {
 	}
 
 	PrintFileInfo(currPathCut)
-	PrintLinesChunk()
-	fileDecoder = GetEncodingDecoder(currPath)
+	fileDecoder = GetFileProcessInfo(currPath)
 
 	file, err := os.OpenFile(currPath, os.O_RDONLY, os.ModePerm)
 

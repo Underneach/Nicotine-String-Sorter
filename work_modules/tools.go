@@ -32,20 +32,25 @@ func getAviableStringsCountCached() int64 {
 		return int64(math.Round(float64(freeMemory / (80 * 4 * 0.90)))) // 80 - Предпологаемый размер строки, 4 - размер символа в байтах, 0.90 - оставляем часть памяти для других элементов сортера
 	} else {
 		PrintWarn()
-		fmt.Print("Не удалось получить количество доступной памяти : Чтение по чанкам в 2Гб")
+		fmt.Print(" Не удалось получить количество доступной памяти : Чтение по чанкам в 2Гб")
 		return 6700000 // Возвращаем ~2 гига, если не получили доступный размер
 	}
 }
 
-func GetEncodingDecoder(path string) *encoding.Decoder {
+func GetFileProcessInfo(path string) *encoding.Decoder {
+
 	result := make(chan *encoding.Decoder, 1)
+
 	go func() {
-		result <- DoGetEncodingDecoder(path)
+		result <- GetFileDecoder(path)
 	}()
+
+	PrintChunk()
+
 	select {
 	case <-time.After(5 * time.Second):
 		PrintErr()
-		fmt.Print("Таймаут определения кодировки : Используется ")
+		fmt.Print(" Таймаут определения кодировки : Используется ")
 		ColorBlue.Print(" UTF-8/n")
 		return unicode.UTF8.NewDecoder()
 	case result := <-result:
@@ -53,7 +58,7 @@ func GetEncodingDecoder(path string) *encoding.Decoder {
 	}
 }
 
-func DoGetEncodingDecoder(path string) *encoding.Decoder {
+func GetFileDecoder(path string) *encoding.Decoder {
 
 	var detectedEncoding encoding.Encoding
 	var decoder *encoding.Decoder
@@ -63,7 +68,7 @@ func DoGetEncodingDecoder(path string) *encoding.Decoder {
 	file, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		PrintErr()
-		fmt.Printf("Ошибка определения кодировки : %s : Используется : ", err)
+		fmt.Printf(" Ошибка определения кодировки : %s : Используется : ", err)
 		ColorBlue.Print(" UTF-8/n")
 		return unicode.UTF8.NewDecoder()
 	}
