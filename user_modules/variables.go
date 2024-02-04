@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 )
 
@@ -18,7 +19,6 @@ var (
 	ColorYellow  = color.New(color.FgYellow).Add(color.Bold)
 
 	filesSize       int64                       // Размер всех входных файлов
-	returnData      string                      // Выбор пользователя после ввода данных
 	userInputReader = bufio.NewReader(os.Stdin) // Альтернативный ридер инпута с поддержкой пробелов
 	userOs          = runtime.GOOS              // ОС юзера
 	updateWG        sync.WaitGroup              // ВГ обновы
@@ -29,5 +29,5 @@ var (
 	searchRequests []string
 	saveType       string
 	cleanType      string
-	delimetr       string = ":"
+	delimetr       = strings.TrimSpace(":")
 )

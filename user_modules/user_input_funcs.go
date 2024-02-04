@@ -26,6 +26,9 @@ LoopWork:
 		case "2":
 			work = "cleaner"
 			break LoopWork
+		case "3":
+			work = "editconfig"
+			break LoopWork
 		case "4":
 			os.Exit(0)
 		default:

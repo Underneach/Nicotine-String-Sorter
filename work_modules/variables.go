@@ -57,18 +57,18 @@ var (
 	sorterStringHashMap          = make(map[uint64]bool)                                    // Мапа хешей строк
 
 	// Клинер
-	validPattern, _         = regexp.Compile(`^[a-zA-Z0-9\.\,\!\?\:\;\-\'\"\@\/\#\$\%\^\&\*\(\)\_\+\=\~\x60]{10,256}$`)                         // Паттерн валида
-	unknownPattern, _       = regexp.Compile(`UNKNOWN`)                                                                                         // Содержание UNKNOWN
-	cleanerOutputFilesMap   = make(map[string]string)                                                                                           // Мапа выходных файлов
-	cleanerResultChannelMap = make(map[string]chan string)                                                                                      // Мапа валид строк
-	cleanerWriteFile        *os.File                                                                                                            // Файл записи
-	cleanerInvalidLen       int64                                                                                       = 0                     // Кол во невалид строк
-	currFileInvalidLen      int64                                                                                       = 0                     // Кол во повторяющихся строк
-	cleanerDublesLen        int64                                                                                       = 0                     // Колво повторяющихся строк
-	currFileDubles          int64                                                                                       = 0                     //
-	cleanerWritedString     int64                                                                                       = 0                     // Кол во записанных строк
-	currFileWritedString    int64                                                                                       = 0                     //
-	cleanerStringHashMap                                                                                                = make(map[uint64]bool) // Мапа хешей строк
+	validPattern, _         = regexp.Compile(`^[a-zA-Z0-9\.\,\!\?\:\;\-\'\"\@\/\#\$\%\^\&\*\(\)\_\+\=\~\x60\|\[\]\{\}]{10,256}$`)                         // Паттерн валида
+	unknownPattern, _       = regexp.Compile(`UNKNOWN`)                                                                                                   // Содержание UNKNOWN
+	cleanerOutputFilesMap   = make(map[string]string)                                                                                                     // Мапа выходных файлов
+	cleanerResultChannelMap = make(map[string]chan string)                                                                                                // Мапа валид строк
+	cleanerWriteFile        *os.File                                                                                                                      // Файл записи
+	cleanerInvalidLen       int64                                                                                                 = 0                     // Кол во невалид строк
+	currFileInvalidLen      int64                                                                                                 = 0                     // Кол во повторяющихся строк
+	cleanerDublesLen        int64                                                                                                 = 0                     // Колво повторяющихся строк
+	currFileDubles          int64                                                                                                 = 0                     //
+	cleanerWritedString     int64                                                                                                 = 0                     // Кол во записанных строк
+	currFileWritedString    int64                                                                                                 = 0                     //
+	cleanerStringHashMap                                                                                                          = make(map[uint64]bool) // Мапа хешей строк
 
 	// Арги
 	filePathList   []string

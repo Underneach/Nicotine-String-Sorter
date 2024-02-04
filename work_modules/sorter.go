@@ -27,7 +27,7 @@ func RunSorter() {
 
 		switch saveType {
 		case "1":
-			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*" + delimetr + " (.+" + delimetr + ".+)")
+			compiledRegEx, err = regexp.Compile(".*" + regexp.QuoteMeta(request) + ".*" + delimetr + "(.+" + delimetr + ".+)")
 		case "2":
 			compiledRegEx, err = regexp.Compile("(.*" + regexp.QuoteMeta(request) + ".*" + delimetr + ".+" + delimetr + ".+)")
 		}

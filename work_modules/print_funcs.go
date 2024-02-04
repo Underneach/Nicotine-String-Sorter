@@ -196,6 +196,21 @@ func PrintSorterResult() {
 		fmt.Print(" : ")
 		ColorBlue.Print(sorterRequestStatMap[request])
 		fmt.Print(" строк : ")
+		if fi, err := os.Stat(requestStructMap[request].resultFile); err == nil {
+			fsize := fi.Size()
+			switch {
+			case fsize < 1048576:
+				ColorBlue.Print(fi.Size() / 1024)
+				fmt.Print(" Кб : ")
+			case fsize >= 1048576:
+				ColorBlue.Print(fi.Size() / 1048576)
+				fmt.Print(" Мб : ")
+			}
+
+		} else {
+			ColorBlue.Print("?")
+			fmt.Print(" Мб : ")
+		}
 		ColorBlue.Print(requestStructMap[request].resultFile, "\n")
 	}
 	fmt.Print("\n\n")
@@ -240,10 +255,40 @@ func PrintCleanerResult() {
 	case "1":
 		for _, path := range filePathList {
 			PrintSuccess()
+			if fi, err := os.Stat(cleanerOutputFilesMap[path]); err == nil {
+				fsize := fi.Size()
+				switch {
+				case fsize < 1048576:
+					ColorBlue.Print(fi.Size() / 1024)
+					fmt.Print(" Кб : ")
+				case fsize >= 1048576:
+					ColorBlue.Print(fi.Size() / 1048576)
+					fmt.Print(" Мб : ")
+				}
+				fmt.Print(" Мб : ")
+			} else {
+				ColorBlue.Print("?")
+				fmt.Print(" Мб : ")
+			}
 			fmt.Print(cleanerOutputFilesMap[path] + "\n")
 		}
 	case "2":
 		PrintSuccess()
+		PrintSuccess()
+		if fi, err := os.Stat(cleanerOutputFilesMap[filePathList[0]]); err == nil {
+			fsize := fi.Size()
+			switch {
+			case fsize < 1048576:
+				ColorBlue.Print(fi.Size() / 1024)
+				fmt.Print(" Кб : ")
+			case fsize >= 1048576:
+				ColorBlue.Print(fi.Size() / 1048576)
+				fmt.Print(" Мб : ")
+			}
+		} else {
+			ColorBlue.Print("?")
+			fmt.Print(" Мб : ")
+		}
 		fmt.Print(cleanerOutputFilesMap[filePathList[0]] + "\n")
 	}
 
