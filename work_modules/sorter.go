@@ -35,6 +35,7 @@ func RunSorter() {
 		if err != nil {
 			PrintErr()
 			fmt.Printf("%s : Ошибка компиляции запроса : %s\n", request, err)
+			RemoveFromSliceByValue(searchRequests, request)
 			continue
 		}
 
@@ -42,9 +43,17 @@ func RunSorter() {
 		currentStruct.requestPattern = compiledRegEx
 		currentStruct.resultFile = runDir + fileBadSymbolsPattern.ReplaceAllString(request, "_") + ".txt"
 		requestStructMap[request] = currentStruct
+
+		if resultFile, err := os.OpenFile(requestStructMap[request].resultFile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0755); err == nil {
+			sorterResultFileMap[request] = resultFile
+			sorterResultWriterMap[request] = bufio.NewWriter(transform.NewWriter(resultFile, unicode.UTF8.NewDecoder()))
+		} else {
+			RemoveFromSliceByValue(searchRequests, request)
+			PrintResultWriteErr(request, err)
+		}
 	}
 
-	if len(requestStructMap) == 0 {
+	if len(requestStructMap) == 0 || len(sorterResultFileMap) == 0 || len(sorterResultWriterMap) == 0 {
 		PrintZeroRequestsErr()
 	}
 
@@ -75,7 +84,7 @@ func Sorter(path string) {
 	PrintFileInfo(currPathCut)
 	fileDecoder = GetFileProcessInfo(currPath)
 
-	file, err := os.OpenFile(currPath, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(currPath, os.O_RDWR, os.ModePerm)
 
 	if err != nil {
 		PrintFileReadErr(currPath, err)
@@ -102,10 +111,10 @@ func Sorter(path string) {
 
 	workWG.Wait()
 
-	checkedLines += int64(TMPlinesLen) // Прибавляем строки
-	_ = pBar.Finish()                  // Завершаем бар
-	_ = pBar.Exit()                    // Закрываем бар
-	close(sorterWriteChannelMap[currPath])
+	checkedLines += int64(TMPlinesLen)     // Прибавляем строки
+	_ = pBar.Finish()                      // Завершаем бар
+	_ = pBar.Exit()                        // Закрываем бар
+	close(sorterWriteChannelMap[currPath]) // 
 
 	isFileInProcessing = false
 	for !isResultWrited {
@@ -119,7 +128,7 @@ func Sorter(path string) {
 	PrintFileDone(currPathCut)       // Пишем файл отсортрован
 	checkedFiles++                   // Прибавляем пройденные файлы
 	matchLines += currFileMatchLines // Суммируем найденые строки
-	sorterDubles += currFileDubles
+	sorterDubles += currFileDubles   //
 }
 
 func SorterProcessLine(line string) {
@@ -134,21 +143,12 @@ func SorterProcessLine(line string) {
 
 func SorterWriteResult() {
 
-	for _, request := range searchRequests {
-		if resultFile, err := os.OpenFile(requestStructMap[request].resultFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
-			sorterResultFileMap[request] = resultFile
-			sorterResultWriterMap[request] = bufio.NewWriter(transform.NewWriter(resultFile, unicode.UTF8.NewDecoder()))
-		} else {
-			PrintResultWriteErr(request, err)
-		}
-	}
-
 	for {
 		if data, ok := <-sorterWriteChannelMap[currPath]; ok {
 			hash := xxh3.HashString(data[1])
 			if _, ok := sorterStringHashMap[hash]; !ok {
 				sorterStringHashMap[hash] = true
-				_, _ = sorterResultWriterMap[data[0]].WriteString(data[1] + "\n")
+				sorterResultWriterMap[data[0]].WriteString(data[1] + "\n")
 				sorterRequestStatMapCurrFile[data[0]]++
 			} else {
 				currFileDubles++
@@ -160,9 +160,26 @@ func SorterWriteResult() {
 	}
 
 	for _, request := range searchRequests {
-		sorterResultFileMap[request].Close()
+		if err := sorterResultWriterMap[request].Flush(); err != nil {
+			PrintErr()
+			fmt.Print("Ошибка выгрузки результата из буффера в файл : ", err, "\n")
+		}
 		currFileMatchLines += sorterRequestStatMapCurrFile[request]
 		sorterRequestStatMap[request] += sorterRequestStatMapCurrFile[request]
 	}
+
 	isResultWrited = true // сообщаем о том, что файл записан
+}
+
+func SorterEnd() {
+	for _, request := range searchRequests {
+		sorterResultFileMap[request].Close()
+		if stat, err := os.Stat(requestStructMap[request].resultFile); err == nil && stat.Size() == 0 {
+			os.Remove(requestStructMap[request].resultFile)
+		}
+	}
+
+	if IsDirEmpty(runDir) {
+		os.Remove(runDir)
+	}
 }

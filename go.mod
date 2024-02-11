@@ -1,6 +1,6 @@
 module String-Sorter
 
-go 1.21
+go 1.22
 
 require (
 	github.com/fatih/color v1.16.0 // Цветной вывод
@@ -10,15 +10,15 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // Определение кодировки файла
 	github.com/schollz/progressbar/v3 v3.14.1 // Прогресс бар
 	github.com/zeebo/xxh3 v1.0.2 // Хеш
-	golang.org/x/net v0.20.0 // Получение кодировки из строки с названием
+	golang.org/x/net v0.21.0 // Получение кодировки из строки с названием
 	golang.org/x/text v0.14.0 // Трансформатор ебать
 )
 
 require (
+    golang.org/x/term v0.17.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
-	github.com/rivo/uniseg v0.4.6 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 )

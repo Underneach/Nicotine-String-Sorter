@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -19,7 +20,7 @@ func GetAviableStringsCount() int64 {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
 
-	if time.Since(lastUpdate) > time.Second*30 { // Если прошло более полуминуты с момента последнего обновления, обновляем кеш
+	if time.Since(lastUpdate) > time.Second*15 { // Если прошло более 1\4 минуты с момента последнего обновления, обновляем кеш
 		cachedStrCount = getAviableStringsCountCached()
 		lastUpdate = time.Now()
 	}
@@ -51,7 +52,7 @@ func GetFileProcessInfo(path string) *encoding.Decoder {
 	case <-time.After(5 * time.Second):
 		PrintErr()
 		fmt.Print(" Таймаут определения кодировки : Используется ")
-		ColorBlue.Print(" UTF-8/n")
+		ColorBlue.Print(" UTF-8\n")
 		return unicode.UTF8.NewDecoder()
 	case result := <-result:
 		return result
@@ -69,7 +70,7 @@ func GetFileDecoder(path string) *encoding.Decoder {
 	if err != nil {
 		PrintErr()
 		fmt.Printf(" Ошибка определения кодировки : %s : Используется : ", err)
-		ColorBlue.Print(" UTF-8/n")
+		ColorBlue.Print(" UTF-8\n")
 		return unicode.UTF8.NewDecoder()
 	}
 
@@ -141,4 +142,33 @@ func GetRunDir() (rundir string) {
 	}
 
 	return rundir
+}
+
+func RemoveFromSliceByValue(list []string, item string) (result []string) {
+	var success = false
+	for i, other := range list {
+		if other == item {
+			result = append(list[:i], list[i+1:]...)
+			success = true
+		}
+	}
+	if success {
+		return result
+	} else {
+		return list
+	}
+}
+
+func IsDirEmpty(dir string) bool {
+	f, err := os.Open(dir)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true
+	}
+	return false
 }

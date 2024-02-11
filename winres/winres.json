@@ -11,10 +11,10 @@
     "#1": {
       "0409": {
         "identity": {
-          "name": "",
+          "name": "Nicotine String Sorter | НикотиновыйКодер",
           "version": ""
         },
-        "description": "",
+        "description": "Nicotine String Sorter | НикотиновыйКодер",
         "minimum-os": "win7",
         "execution-level": "as invoker",
         "ui-access": false,
@@ -41,16 +41,16 @@
         },
         "info": {
           "0409": {
-            "Comments": "",
-            "CompanyName": "",
-            "FileDescription": "",
+            "Comments": "Nicotine String Sorter | НикотиновыйКодер",
+            "CompanyName": "Nicotine String Sorter | НикотиновыйКодер",
+            "FileDescription": "Nicotine String Sorter | НикотиновыйКодер",
             "FileVersion": "",
-            "InternalName": "",
-            "LegalCopyright": "",
-            "LegalTrademarks": "",
-            "OriginalFilename": "",
+            "InternalName": "Nicotine String Sorter | НикотиновыйКодер",
+            "LegalCopyright": "Nicotine String Sorter | НикотиновыйКодер",
+            "LegalTrademarks": "Nicotine String Sorter | НикотиновыйКодер",
+            "OriginalFilename": "Nicotine String Sorter | НикотиновыйКодер",
             "PrivateBuild": "",
-            "ProductName": "",
+            "ProductName": "Nicotine String Sorter | НикотиновыйКодер",
             "ProductVersion": "",
             "SpecialBuild": ""
           }

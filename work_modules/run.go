@@ -3,6 +3,7 @@ package work_modules
 import "time"
 
 func Run(_workMode string, _filePathList []string, _searchRequests []string, _saveType string, _cleanType string, _delimetr string) time.Duration {
+
 	InitVar(_workMode, _filePathList, _searchRequests, _saveType, _cleanType, _delimetr)
 
 	startTime := time.Now()
@@ -14,6 +15,7 @@ func Run(_workMode string, _filePathList []string, _searchRequests []string, _sa
 		for _, filePath := range filePathList {
 			Sorter(filePath)
 		}
+		SorterEnd()
 		PrintSorterResult()
 
 	case "cleaner":

@@ -126,7 +126,7 @@ func CreatePBar() *progressbar.ProgressBar {
 		progressbar.OptionSetItsString("Str"),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetDescription("[*]"),
+		progressbar.OptionSetDescription("[*] "),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "[blue]█[reset]",
 			SaucerHead:    "[green]░[reset]",
@@ -178,13 +178,13 @@ func PrintResultWriteErr(request string, err error) {
 func PrintEncodingErr(err error) {
 	PrintErr()
 	fmt.Printf(" Ошибка определения кодировки : %s : Используется ", err)
-	ColorBlue.Print("UTF-8")
+	ColorBlue.Print("UTF-8\n")
 }
 
 func PrintEndodingLinesEnd() {
 	PrintWarn()
 	fmt.Print(" Недостаточно строк для определения кодировки : Используется ")
-	ColorBlue.Print("UTF-8")
+	ColorBlue.Print("UTF-8\n")
 }
 
 func PrintSorterResult() {
@@ -265,7 +265,6 @@ func PrintCleanerResult() {
 					ColorBlue.Print(fi.Size() / 1048576)
 					fmt.Print(" Мб : ")
 				}
-				fmt.Print(" Мб : ")
 			} else {
 				ColorBlue.Print("?")
 				fmt.Print(" Мб : ")

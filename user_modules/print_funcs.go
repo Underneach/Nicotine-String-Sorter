@@ -142,12 +142,12 @@ LoopData:
 
 		ColorBlue.Print("	1")
 		fmt.Print(" - Запустить\n")
-		if workMode == "sorter" {
-			ColorBlue.Print("	2")
-			fmt.Print(" - Выбрать разделитель строк - '")
-			ColorBlue.Print(":")
-			fmt.Print("' по умолчанию\n")
-		}
+
+		ColorBlue.Print("	2")
+		fmt.Print(" - Выбрать разделитель строк - '")
+		ColorBlue.Print(":")
+		fmt.Print("' по умолчанию\n")
+
 		ColorBlue.Print("	3")
 		fmt.Print(" - Ввести данные заново\n\n")
 
@@ -162,12 +162,8 @@ LoopData:
 				uSelect = "continue"
 				break LoopMode
 			case "2":
-				if workMode == "sorter" {
-					delimetr = GetDelimetrInput()
-					continue LoopData
-				} else {
-					continue LoopData
-				}
+				delimetr = GetDelimetrInput()
+				continue LoopData
 			case "3":
 				uSelect = "restart"
 				break LoopMode
@@ -230,11 +226,30 @@ func PrintWorkModes() {
 	fmt.Print("Поддерживаемые типы работы:\n\n")
 	ColorBlue.Print("       1")
 	fmt.Print(" - Сортер строк\n")
-	fmt.Print("       Поиск строк в базе подходящих под запросы и запись в отдельный файл с удалением повторов\n")
-	fmt.Print("       Запрос должен быть в формате 'google.com' или 'google'\n\n")
+	fmt.Print("       Поиск строк в базе подходящих под запросы и запись в ")
+	ColorBlue.Print("отдельный файл")
+	fmt.Print(" с ")
+	ColorBlue.Print("удалением повторов\n")
+	fmt.Print("       Запрос должен быть в формате '")
+	ColorBlue.Print("google.com")
+	fmt.Print("' или '")
+	ColorBlue.Print("google")
+	fmt.Print("'\n\n")
+
 	ColorBlue.Print("       2")
 	fmt.Print(" - Клинер базы от невалид строк и дубликатов\n")
-	fmt.Print("       Удаление повторов и строк не подходящих под 'A-z / 0-9 / Специмволы | 10-256 символов | без UNKNOWN'\n\n")
+	fmt.Print("       Удаление повторов и строк не подходящих под '")
+	ColorBlue.Print("A-z")
+	fmt.Print(" | ")
+	ColorBlue.Print("0-9")
+	fmt.Print(" | ")
+	ColorBlue.Print("Спецсимволы")
+	fmt.Print(" | ")
+	ColorBlue.Print("10-256")
+	fmt.Print(" символов | без ")
+	ColorBlue.Print("UNKNOWN")
+	fmt.Print("'\n\n")
+
 	ColorBlue.Print("       4")
 	fmt.Print(" - Закрыть программу\n\n")
 }

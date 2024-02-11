@@ -5,7 +5,7 @@ import (
 	"String-Sorter/work_modules"
 )
 
-var appVersion = "2.6.0"
+var appVersion = "2.7.0"
 
 func main() {
 

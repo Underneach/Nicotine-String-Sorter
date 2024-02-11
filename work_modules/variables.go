@@ -23,24 +23,24 @@ var (
 	ColorYellow  = color.New(color.FgYellow).Add(color.Bold)
 
 	// Общие
-	isFileInProcessing       bool                                                       // Обрабатывается ли файл
-	isResultWrited           bool                                                       // Записан ли файл
-	fileBadSymbolsPattern, _                          = regexp.Compile(`[^a-zA-Z0-9]+`) // Разрешенные для файла символы
-	checkedLines             int64                    = 0                               // Колво отработанных строк
-	checkedFiles                                      = 0                               // Колво отработанных файлов
-	currentFileSize          int64                    = 0                               // Размер текущего файла в сорте
-	currentFileLines         int64                    = 0                               // Размер текущего файла в сорте
-	fileDecoder              *encoding.Decoder                                          // Декодер файла
-	cacheMutex               sync.Mutex                                                 // Мютекс кеша метода получения колва  доступных строк
-	cachedStrCount           int64                                                      // Колво доступных строк | кешируется
-	lastUpdate               time.Time                                                  // Время с последней обновы cachedStrCount
-	pBar                     *progressbar.ProgressBar                                   // Прогресс бар
-	runDir                   = GetRunDir()                                              // Папка запуска
-	currPath                 string                                                     // Текущий файл
-	poolerr                  error                                                      // Ошибка создания пула
-	workWG                   sync.WaitGroup                                             // Синхронизатор очка
-	TMPlinesLen              = 0                                                        // Чанк строк в файле
-	currPathCut              string                                                     // Текущий файл без полного пути
+	isFileInProcessing       bool                                                         // Обрабатывается ли файл
+	isResultWrited           bool                                                         // Записан ли файл
+	fileBadSymbolsPattern, _                          = regexp.Compile(`[^a-zA-Z0-9\.]+`) // Разрешенные для файла символы
+	checkedLines             int64                    = 0                                 // Колво отработанных строк
+	checkedFiles                                      = 0                                 // Колво отработанных файлов
+	currentFileSize          int64                    = 0                                 // Размер текущего файла в сорте
+	currentFileLines         int64                    = 0                                 // Размер текущего файла в сорте
+	fileDecoder              *encoding.Decoder                                            // Декодер файла
+	cacheMutex               sync.Mutex                                                   // Мютекс кеша метода получения колва  доступных строк
+	cachedStrCount           int64                                                        // Колво доступных строк | кешируется
+	lastUpdate               time.Time                                                    // Время с последней обновы cachedStrCount
+	pBar                     *progressbar.ProgressBar                                     // Прогресс бар
+	runDir                   = GetRunDir()                                                // Папка запуска
+	currPath                 string                                                       // Текущий файл
+	poolerr                  error                                                        // Ошибка создания пула
+	workWG                   sync.WaitGroup                                               // Синхронизатор очка
+	TMPlinesLen              = 0                                                          // Чанк строк в файле
+	currPathCut              string                                                       // Текущий файл без полного пути
 
 	// Сортер
 	currFileMatchLines           int64                             = 0                      //
@@ -57,18 +57,20 @@ var (
 	sorterStringHashMap          = make(map[uint64]bool)                                    // Мапа хешей строк
 
 	// Клинер
-	validPattern, _         = regexp.Compile(`^[a-zA-Z0-9\.\,\!\?\:\;\-\'\"\@\/\#\$\%\^\&\*\(\)\_\+\=\~\x60\|\[\]\{\}]{10,256}$`)                         // Паттерн валида
-	unknownPattern, _       = regexp.Compile(`UNKNOWN`)                                                                                                   // Содержание UNKNOWN
-	cleanerOutputFilesMap   = make(map[string]string)                                                                                                     // Мапа выходных файлов
-	cleanerResultChannelMap = make(map[string]chan string)                                                                                                // Мапа валид строк
-	cleanerWriteFile        *os.File                                                                                                                      // Файл записи
-	cleanerInvalidLen       int64                                                                                                 = 0                     // Кол во невалид строк
-	currFileInvalidLen      int64                                                                                                 = 0                     // Кол во повторяющихся строк
-	cleanerDublesLen        int64                                                                                                 = 0                     // Колво повторяющихся строк
-	currFileDubles          int64                                                                                                 = 0                     //
-	cleanerWritedString     int64                                                                                                 = 0                     // Кол во записанных строк
-	currFileWritedString    int64                                                                                                 = 0                     //
-	cleanerStringHashMap                                                                                                          = make(map[uint64]bool) // Мапа хешей строк
+	validPattern, _          = regexp.Compile(`^[a-zA-Z0-9\.\,\!\?\:\;\-\'\"\@\/\#\$\%\^\&\*\(\)\_\+\=\~\x60\|\[\]\{\}]{12,256}$`) // Паттерн валида
+	unknownPattern, _        = regexp.Compile(`(?i)UNKNOWN`)                                                                       // Содержание UNKNOWN
+	partsPattern             *regexp.Regexp
+	cleanerOutputFilesMap    = make(map[string]string)                              // Мапа выходных файлов
+	cleanerResultChannelMap  = make(map[string]chan string)                         // Мапа валид строк
+	cleanerWriteFile         *bufio.Writer                                          // Файл записи
+	cleanerInvalidLen        int64                          = 0                     // Кол во невалид строк
+	currFileInvalidLen       int64                          = 0                     // Кол во повторяющихся строк
+	cleanerDublesLen         int64                          = 0                     // Колво повторяющихся строк
+	currFileDubles           int64                          = 0                     //
+	cleanerWritedString      int64                          = 0                     // Кол во записанных строк
+	currFileWritedString     int64                          = 0                     //
+	cleanerStringHashMap                                    = make(map[uint64]bool) // Мапа хешей строк
+	cleanerPartsPatternIsErr                                = false                 // Есть ли ошибка компиляции 
 
 	// Арги
 	filePathList   []string
@@ -90,7 +92,7 @@ func InitVar(_workMode string, _filePathList []string, _searchRequests []string,
 	searchRequests = _searchRequests
 	saveType = _saveType
 	cleanType = _cleanType
-	delimetr = _delimetr
+	delimetr = regexp.QuoteMeta(_delimetr)
 }
 
 func InitSorter() {
